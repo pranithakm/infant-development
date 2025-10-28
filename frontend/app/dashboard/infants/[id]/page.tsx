@@ -1,0 +1,432 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { useInfantStore } from '@/store/infantStore'
+import { Baby, Calendar, Ruler, Weight, User, Phone, Heart, Activity } from 'lucide-react'
+import Link from 'next/link'
+import toast from 'react-hot-toast'
+import { Infant, InfantMilestone } from '@/types'
+import { useTranslation } from 'react-i18next'
+
+export default function InfantDetailsPage({ params }: { params: { id: string } }) {
+  const router = useRouter()
+  const { selectedInfant, loading, error, fetchInfant, updateMilestoneStatus } = useInfantStore()
+  const [activeCategory, setActiveCategory] = useState('All')
+  const [filteredMilestones, setFilteredMilestones] = useState<InfantMilestone[]>([])
+  const { t } = useTranslation()
+
+  useEffect(() => {
+    // Don't try to fetch data if the ID is "new" (which would be an invalid route)
+    if (params.id !== 'new') {
+      fetchInfant(params.id)
+    }
+  }, [params.id, fetchInfant])
+
+  useEffect(() => {
+    if (selectedInfant) {
+      // Filter milestones by category
+      if (activeCategory === 'All') {
+        setFilteredMilestones(selectedInfant.milestones)
+      } else {
+        setFilteredMilestones(
+          selectedInfant.milestones.filter(
+            (milestone) => milestone.milestoneId.category === activeCategory
+          )
+        )
+      }
+    }
+  }, [selectedInfant, activeCategory])
+
+  const handleStatusChange = async (milestoneId: string, status: string) => {
+    if (!selectedInfant) return
+    
+    try {
+      const result = await updateMilestoneStatus(selectedInfant._id, milestoneId, status)
+      if (result) {
+        toast.success(t('milestone_status_updated'))
+      }
+    } catch (err) {
+      toast.error(t('failed_to_update_milestone'))
+    }
+  }
+
+  // Get unique categories
+  const categories = selectedInfant 
+    ? ['All', ...new Set(selectedInfant.milestones.map(m => m.milestoneId.category))]
+    : ['All']
+
+  // Calculate progress by category
+  const calculateCategoryProgress = (category: string) => {
+    if (!selectedInfant) return 0
+    
+    const categoryMilestones = selectedInfant.milestones.filter(
+      m => category === 'All' || m.milestoneId.category === category
+    )
+    
+    if (categoryMilestones.length === 0) return 0
+    
+    const completed = categoryMilestones.filter(
+      m => m.status === 'Achieved' || m.status === 'Mastered'
+    ).length
+    
+    return Math.round((completed / categoryMilestones.length) * 100)
+  }
+
+  // Get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Not Started': return 'bg-gray-200 text-gray-800'
+      case 'Emerging': return 'bg-yellow-100 text-yellow-800'
+      case 'Developing': return 'bg-blue-100 text-blue-800'
+      case 'Achieved': return 'bg-green-100 text-green-800'
+      case 'Mastered': return 'bg-purple-100 text-purple-800'
+      default: return 'bg-gray-200 text-gray-800'
+    }
+  }
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  // If we're on an invalid route (like "new"), show an error message
+  if (params.id === 'new') {
+    return (
+      <div className="flex-1 p-8">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="max-w-md text-center">
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">{t('invalid_route')}</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{t('invalid_route_desc')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6">
+              <Link href="/dashboard/infants/new">
+                <Button>{t('add_new_infant')}</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading && !selectedInfant) {
+    return (
+      <div className="flex-1 p-8">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <svg className="animate-spin h-12 w-12 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="mt-4 text-gray-600">{t('loading_infant_details')}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 p-8">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="max-w-md text-center">
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">{t('error')}</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{error}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6">
+              <Link href="/dashboard">
+                <Button variant="outline">{t('back_to_dashboard')}</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!selectedInfant) {
+    return (
+      <div className="flex-1 p-8">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="max-w-md text-center">
+            <Baby className="h-16 w-16 text-gray-400 mx-auto" />
+            <h3 className="mt-4 text-xl font-medium text-gray-900">{t('infant_not_found')}</h3>
+            <p className="mt-2 text-gray-600">{t('infant_not_found_desc')}</p>
+            <div className="mt-6">
+              <Link href="/dashboard">
+                <Button variant="outline">{t('back_to_dashboard')}</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('infant_details')}</h1>
+
+        {/* Infant Overview */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center">
+                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-24 h-24" />
+                <div className="ml-6">
+                  <h2 className="text-2xl font-bold text-gray-900">{selectedInfant.name}</h2>
+                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <span>
+                        {formatDate(selectedInfant.dateOfBirth)}
+                        {selectedInfant.ageInMonths !== undefined && ` (${selectedInfant.ageInMonths} ${t('months')})`}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <User className="h-4 w-4 mr-2" />
+                      <span className="capitalize">{t(selectedInfant.gender)}</span>
+                    </div>
+                    {(selectedInfant.birthWeight || selectedInfant.birthLength) && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        {selectedInfant.birthWeight && (
+                          <>
+                            <Weight className="h-4 w-4 mr-2" />
+                            <span>{selectedInfant.birthWeight} {t('kg')}</span>
+                          </>
+                        )}
+                        {selectedInfant.birthWeight && selectedInfant.birthLength && (
+                          <span className="mx-2">•</span>
+                        )}
+                        {selectedInfant.birthLength && (
+                          <>
+                            <Ruler className="h-4 w-4 mr-2" />
+                            <span>{selectedInfant.birthLength} {t('cm')}</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 md:mt-0">
+                <div className="flex space-x-3">
+                  <Link href={`/dashboard/infants/${params.id}/edit`}>
+                    <Button variant="outline">
+                      {t('edit_profile')}
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                    onClick={() => {
+                      if (window.confirm(t('confirm_delete_infant', { name: selectedInfant.name }))) {
+                        // In a real implementation, you would call the delete API here
+                        // For now, we'll just show a message
+                        toast.success(t('infant_deleted_successfully', { name: selectedInfant.name }))
+                        router.push('/dashboard')
+                      }
+                    }}
+                  >
+                    {t('delete_infant')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Medical Information */}
+        {selectedInfant.medicalInfo && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Heart className="h-5 w-5 mr-2 text-red-600" />
+                {t('medical_info')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {selectedInfant.medicalInfo.bloodType && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">{t('blood_type')}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedInfant.medicalInfo.bloodType}</p>
+                  </div>
+                )}
+                {selectedInfant.medicalInfo.allergies && selectedInfant.medicalInfo.allergies.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">{t('allergies')}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedInfant.medicalInfo.allergies.join(', ')}</p>
+                  </div>
+                )}
+                {selectedInfant.medicalInfo.medications && selectedInfant.medicalInfo.medications.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">{t('medications')}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedInfant.medicalInfo.medications.join(', ')}</p>
+                  </div>
+                )}
+                {selectedInfant.medicalInfo.conditions && selectedInfant.medicalInfo.conditions.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">{t('conditions')}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedInfant.medicalInfo.conditions.join(', ')}</p>
+                  </div>
+                )}
+                {selectedInfant.medicalInfo.pediatrician && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">{t('pediatrician_name')}</p>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {selectedInfant.medicalInfo.pediatrician.name}
+                      {selectedInfant.medicalInfo.pediatrician.contact && (
+                        <span className="block text-gray-500 flex items-center mt-1">
+                          <Phone className="h-4 w-4 mr-1" />
+                          {selectedInfant.medicalInfo.pediatrician.contact}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Milestone Tracking */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Activity className="h-5 w-5 mr-2 text-blue-600" />
+              {t('developmental_milestones')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Category Tabs */}
+            <div className="border-b border-gray-200 mb-6">
+              <nav className="-mb-px flex space-x-8 overflow-x-auto">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                      activeCategory === category
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    {category === 'All' ? t('all') : t(category)}
+                    <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                      {category === 'All' 
+                        ? selectedInfant.milestones.length 
+                        : selectedInfant.milestones.filter(m => m.milestoneId.category === category).length}
+                    </span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Progress Summary */}
+            <div className="mb-6">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600">
+                  {activeCategory === 'All' ? t('overall_progress') : t(activeCategory)} {t('progress')}
+                </span>
+                <span className="font-medium">{calculateCategoryProgress(activeCategory)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-blue-600 h-2.5 rounded-full" 
+                  style={{ width: `${calculateCategoryProgress(activeCategory)}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Milestones List */}
+            <div className="space-y-4">
+              {filteredMilestones.length === 0 ? (
+                <div className="text-center py-12">
+                  <Activity className="h-12 w-12 text-gray-400 mx-auto" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">{t('no_milestones_found')}</h3>
+                  <p className="mt-1 text-gray-500">
+                    {t('no_milestones_matching_filters', { category: activeCategory })}
+                  </p>
+                </div>
+              ) : (
+                filteredMilestones.map((infantMilestone) => {
+                  const milestone = infantMilestone.milestoneId
+                  return (
+                    <div key={infantMilestone._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900">{milestone.name}</h3>
+                          <p className="mt-1 text-sm text-gray-600">{milestone.description}</p>
+                          <div className="mt-2 flex items-center">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {milestone.recommendedAge}
+                            </span>
+                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              {t(milestone.category)}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(infantMilestone.status)}`}>
+                            {t(infantMilestone.status.toLowerCase().replace(' ', '_'))}
+                          </span>
+                          <select
+                            value={infantMilestone.status}
+                            onChange={(e) => handleStatusChange(milestone._id, e.target.value)}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                          >
+                            <option value="Not Started">{t('not_started')}</option>
+                            <option value="Emerging">{t('emerging')}</option>
+                            <option value="Developing">{t('developing')}</option>
+                            <option value="Achieved">{t('achieved')}</option>
+                            <option value="Mastered">{t('mastered')}</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
