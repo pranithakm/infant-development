@@ -75,7 +75,6 @@ router.post('/register', [
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error during registration'
@@ -146,7 +145,6 @@ router.post('/login', [
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error during login'
@@ -177,7 +175,6 @@ router.get('/me', protect, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get user error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -238,7 +235,6 @@ router.put('/profile', [
       }
     });
   } catch (error) {
-    console.error('Profile update error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -289,7 +285,6 @@ router.post('/change-password', [
       message: 'Password changed successfully'
     });
   } catch (error) {
-    console.error('Password change error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'

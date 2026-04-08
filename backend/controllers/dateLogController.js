@@ -39,7 +39,6 @@ exports.getDateLogs = async (req, res) => {
       data: dateLogs
     });
   } catch (error) {
-    console.error('Get date logs error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -116,7 +115,6 @@ exports.getDateActivities = async (req, res) => {
       data: dateLog
     });
   } catch (error) {
-    console.error('Get date activities error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -197,7 +195,6 @@ exports.logActivity = async (req, res) => {
       data: dateLog
     });
   } catch (error) {
-    console.error('Log activity error:', error);
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -296,7 +293,6 @@ exports.getAnniversaries = async (req, res) => {
       data: anniversaries
     });
   } catch (error) {
-    console.error('Get anniversaries error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,

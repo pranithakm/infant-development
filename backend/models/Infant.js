@@ -86,6 +86,20 @@ const infantSchema = new mongoose.Schema({
       headCircumference: Number
     }
   }],
+  // Routines tracking - date-indexed format
+  routines: {
+    type: [{
+      date: {
+        type: String,
+        required: true
+      },
+      routineIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Routine'
+      }]
+    }],
+    default: []
+  },
   parents: [{
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -136,6 +150,34 @@ const infantSchema = new mongoose.Schema({
       default: 'Not Started'
     }
   }],
+  // AI Insights and Chat History
+  insights: {
+    development_summary: String,
+    growth_analysis: String,
+    strengths: [String],
+    possible_delays: [String],
+    recommended_upcoming_milestones: [String],
+    routine_compliance: String,
+    suggested_routines: [String],
+    eligible_schemes: [String],
+    parenting_recommendations: [String],
+    nutrition_insights: [String]
+  },
+  chatHistory: [{
+    role: {
+      type: String,
+      enum: ['user', 'assistant'],
+      required: true
+    },
+    content: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   avatar: {
     type: String,
     default: null
@@ -180,5 +222,6 @@ infantSchema.virtual('ageInDays').get(function() {
 infantSchema.index({ 'parents.user': 1 });
 infantSchema.index({ isActive: 1 });
 infantSchema.index({ 'calendarActivities.date': 1 });
+infantSchema.index({ 'routines.date': 1 });
 
 module.exports = mongoose.model('Infant', infantSchema);

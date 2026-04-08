@@ -72,95 +72,116 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-500 to-pink-500 p-2 rounded-xl">
-                <Baby className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{t('welcome_back', { name: user?.name })}</h1>
-                <p className="text-gray-600">{t('dashboard_description')}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/infants/new">
-                <Button className="btn-primary">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('add_infant')}
-                </Button>
-              </Link>
-              
-              {/* Profile Dropdown */}
-              <div className="relative">
-                <Button 
-                  variant="ghost"
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center space-x-2"
-                >
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-pink-500 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="hidden md:inline font-medium">{user?.name}</span>
-                </Button>
-                
-                {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
-                    <div className="py-1">
-                      <div className="px-4 py-3 text-sm text-gray-500 border-b border-gray-100">
-                        {user?.email}
-                      </div>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 rounded-lg">
-                        <Settings className="h-4 w-4" />
-                        <span>{t('settings')}</span>
-                      </button>
-                      <button 
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 rounded-lg"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span>{t('logout')}</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      <style jsx>{`
+        @keyframes fade-in-up {
+          0% {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.8s ease-out forwards;
+        }
+        
+        .button {
+          line-height: 1;
+          text-decoration: none;
+          display: inline-flex;
+          border: none;
+          cursor: pointer;
+          align-items: center;
+          gap: 0.75rem;
+          background-color: #7808d0;
+          color: #fff;
+          border-radius: 10rem;
+          font-weight: 600;
+          padding: 0.75rem 1.5rem;
+          padding-left: 20px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          transition: background-color 0.3s;
+        }
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section with Background Image */}
-        <div className="mb-8 rounded-2xl overflow-hidden">
+        .button__icon-wrapper {
+          flex-shrink: 0;
+          width: 25px;
+          height: 25px;
+          position: relative;
+          color: #7808d0;
+          background-color: #fff;
+          border-radius: 50%;
+          display: grid;
+          place-items: center;
+          overflow: hidden;
+        }
+
+        .button:hover {
+          background-color: #5a069d;
+        }
+
+        .button:hover .button__icon-wrapper {
+          color: #5a069d;
+        }
+
+        .button__icon-svg--copy {
+          position: absolute;
+          transform: translate(-150%, 150%);
+        }
+
+        .button:hover .button__icon-svg:first-child {
+          transition: transform 0.3s ease-in-out;
+          transform: translate(150%, -150%);
+        }
+
+        .button:hover .button__icon-svg--copy {
+          transition: transform 0.3s ease-in-out 0.1s;
+          transform: translate(0);
+        }
+      `}</style>
+      
+      <main className="flex-1">
+        {/* Modern Hero Section with Background Image */}
+        <div className="relative h-screen flex items-center">
+          {/* Background image with overlay */}
           <div 
-            className="relative bg-cover bg-center rounded-2xl h-80 md:h-96"
-            style={{ backgroundImage: "url('https://images.pexels.com/photos/1557182/pexels-photo-1557182.jpeg')" }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30 rounded-2xl"></div>
-            <div className="relative z-10 h-full flex flex-col justify-center items-start p-8 md:p-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 max-w-2xl">
-                {t('welcome_to_firststeps')} 
-                <span className="ml-2 text-yellow-300">🎉</span>
-              </h2>
-              <p className="text-white/90 mb-6 text-lg max-w-2xl">
-                {t('dashboard_welcome_description')}
-              </p>
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <Link href="/infants/new">
-                  <Button className="btn-primary" size="lg">
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('get_started')}
-                  </Button>
-                </Link>
-                <Link href="/dashboard/insights">
-                  <Button variant="outline" size="lg" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
-                    <Lightbulb className="h-4 w-4 mr-2" />
-                    {t('ai_insights')}
-                  </Button>
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://images.pexels.com/photos/1840315/pexels-photo-1840315.jpeg')" }}
+          ></div>
+          
+          {/* Black overlay with reduced opacity for text readability */}
+          <div className="absolute inset-0 bg-black/50"></div>
+          
+          {/* Content container - Centered */}
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full z-10">
+            <div className="max-w-2xl mx-auto text-center">
+              <div className="animate-fade-in-up">
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                  Welcome back, {user?.name}
+                </h1>
+                <p className="text-xl md:text-2xl font-semibold text-white mb-6 leading-tight">
+                  Smart Care for Your Baby's First 1000 Days
+                </p>
+                <p className="text-base md:text-lg text-gray-200 mb-8 leading-relaxed">
+                  A calm, intuitive tracker designed to support healthy routines, milestones, and growth — every step supported by science.
+                </p>
+                <Link href="/dashboard/infants/new">
+                  <button className="button">
+                    <span className="button__icon-wrapper">
+                      <svg viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="button__icon-svg" width={10}>
+                        <path d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z" fill="currentColor" />
+                      </svg>
+                      <svg viewBox="0 0 14 15" fill="none" width={10} xmlns="http://www.w3.org/2000/svg" className="button__icon-svg button__icon-svg--copy">
+                        <path d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z" fill="currentColor" />
+                      </svg>
+                    </span>
+                    Get Started
+                  </button>
                 </Link>
               </div>
             </div>
@@ -168,6 +189,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="hover:shadow-xl transition-all duration-300 border-0 glass">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -229,10 +251,11 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+        </div>
 
         {/* Infants Section */}
         {infants.length > 0 ? (
-          <div className="mb-8">
+          <div className="mb-8 px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                 <Baby className="h-6 w-6 mr-2 text-blue-500" />
@@ -304,7 +327,7 @@ export default function DashboardPage() {
             </div>
           </div>
         ) : (
-          <div className="mb-8">
+          <div className="mb-8 px-4 sm:px-6 lg:px-8">
             <Card className="glass border-0">
               <CardContent className="p-8 text-center">
                 <div className="bg-gradient-to-r from-blue-100 to-pink-100 p-4 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">

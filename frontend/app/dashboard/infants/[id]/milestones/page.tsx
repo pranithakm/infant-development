@@ -16,7 +16,7 @@ export default function MilestonesPage({ params }: { params: { id: string } }) {
   const { selectedInfant, loading, error, fetchInfant, updateMilestoneStatus } = useInfantStore()
   const [activeCategory, setActiveCategory] = useState('All')
   const [filteredMilestones, setFilteredMilestones] = useState<InfantMilestone[]>([])
-  const [sortOption, setSortOption] = useState('name') // name, age, status
+  const [sortOption, setSortOption] = useState('age') // age, status
   const [viewMode, setViewMode] = useState('list') // list, grid
   const [statusFilter, setStatusFilter] = useState('All') // All, Not Started, Emerging, etc.
   const [showFilters, setShowFilters] = useState(false)
@@ -50,10 +50,8 @@ export default function MilestonesPage({ params }: { params: { id: string } }) {
       // Sort milestones
       milestones.sort((a, b) => {
         switch (sortOption) {
-          case 'name':
-            return a.milestoneId.name.localeCompare(b.milestoneId.name)
           case 'age':
-            return a.milestoneId.recommendedAge.localeCompare(b.milestoneId.recommendedAge)
+            return a.milestoneId.minMonths - b.milestoneId.minMonths
           case 'status':
             return a.status.localeCompare(b.status)
           default:
@@ -254,7 +252,6 @@ export default function MilestonesPage({ params }: { params: { id: string } }) {
                     onChange={(e) => setSortOption(e.target.value)}
                     className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
-                    <option value="name">{t('sort_by_name')}</option>
                     <option value="age">{t('sort_by_age')}</option>
                     <option value="status">{t('sort_by_status')}</option>
                   </select>

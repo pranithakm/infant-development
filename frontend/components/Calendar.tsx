@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useDateLogStore } from '@/store/dateLogStore';
 import { Infant } from '@/types';
-import { CalendarIcon, ActivityIcon } from 'lucide-react';
+import { CalendarIcon, ActivityIcon, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface CalendarProps {
@@ -174,29 +174,44 @@ export default function Calendar({ infant }: CalendarProps) {
       
       // Determine background color based on different conditions
       let bgColorClass = '';
+      let textColorClass = '';
+      let borderClass = '';
+      let hoverClass = '';
+      
       if (today) {
-        bgColorClass = 'bg-blue-500 text-white';
+        bgColorClass = 'bg-indigo-600';
+        textColorClass = 'text-white';
+        borderClass = 'border-2 border-indigo-700';
       } else if (selected) {
-        bgColorClass = 'bg-blue-100 text-blue-800';
+        bgColorClass = 'bg-indigo-100';
+        textColorClass = 'text-indigo-800';
+        borderClass = 'border-2 border-indigo-500';
       } else if (isCelebrationDay) {
-        bgColorClass = 'bg-yellow-100 text-yellow-800';
+        bgColorClass = 'bg-yellow-100';
+        textColorClass = 'text-yellow-800';
+        borderClass = 'border border-yellow-300';
       } else if (hasActivity) {
-        bgColorClass = 'bg-green-100 text-green-800';
+        bgColorClass = 'bg-green-100';
+        textColorClass = 'text-green-800';
+        borderClass = 'border border-green-300';
       } else {
-        bgColorClass = 'hover:bg-gray-100';
+        bgColorClass = 'bg-white';
+        textColorClass = 'text-gray-700';
+        borderClass = 'border border-gray-200';
+        hoverClass = 'hover:bg-gray-50';
       }
       
       days.push(
         <button
           key={`day-${day}`}
-          className={`h-12 w-12 rounded-full flex flex-col items-center justify-center text-sm font-medium transition-colors
-            ${bgColorClass}
-            focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          className={`h-12 w-12 rounded-full flex flex-col items-center justify-center text-sm font-medium transition-all duration-200
+            ${bgColorClass} ${textColorClass} ${borderClass} ${hoverClass}
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 transform hover:scale-105 active:scale-95 shadow-sm`}
           onClick={() => handleDateClick(date)}
         >
           <span>{day}</span>
           {isCelebrationDay && (
-            <span className="text-xs mt-[-2px]">🎉</span>
+            <Star className="h-3 w-3 text-yellow-600 fill-current mt-[-2px]" />
           )}
         </button>
       );
@@ -232,52 +247,77 @@ export default function Calendar({ infant }: CalendarProps) {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Calendar */}
       <div className="lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <CalendarIcon className="h-5 w-5 mr-2" />
+        <Card className="shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-xl">
+            <CardTitle className="flex items-center text-xl">
+              <CalendarIcon className="h-5 w-5 mr-2 text-indigo-600" />
               {t('calendar')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             {/* Calendar Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+              <h2 className="text-xl font-bold text-gray-800">
                 {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </h2>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" onClick={prevMonth}>{'←'}</Button>
-                <Button variant="outline" size="sm" onClick={goToToday}>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={prevMonth}
+                  className="p-2 rounded-full"
+                  aria-label="Previous month"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={goToToday}
+                  className="px-4 py-2 rounded-lg"
+                >
                   {t('today')}
                 </Button>
-                <Button variant="outline" size="sm" onClick={nextMonth}>{'→'}</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={nextMonth}
+                  className="p-2 rounded-full"
+                  aria-label="Next month"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             </div>
             
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-0 mb-4">
+            <div className="grid grid-cols-7 gap-1 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="h-10 flex items-center justify-center text-sm font-medium text-gray-500 w-12">
+                <div key={day} className="h-10 flex items-center justify-center text-sm font-semibold text-gray-500">
                   {day}
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-0">
+            <div className="grid grid-cols-7 gap-1">
               {renderCalendarDays()}
             </div>
             
             {/* Legend */}
-            <div className="flex flex-wrap gap-4 mt-6">
+            <div className="flex flex-wrap gap-4 mt-8 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center">
-                <div className="w-4 h-4 bg-green-100 rounded-full mr-2"></div>
-                <span className="text-sm text-gray-600">{t('has_activities')}</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+                <div className="w-4 h-4 bg-indigo-600 rounded-full mr-2"></div>
                 <span className="text-sm text-gray-600">{t('today')}</span>
               </div>
               <div className="flex items-center">
-                <div className="w-4 h-4 bg-yellow-100 rounded-full mr-2"></div>
+                <div className="w-4 h-4 bg-indigo-100 rounded-full border-2 border-indigo-500 mr-2"></div>
+                <span className="text-sm text-gray-600">{t('selected')}</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-green-100 rounded-full border border-green-300 mr-2"></div>
+                <span className="text-sm text-gray-600">{t('has_activities')}</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-yellow-100 rounded-full border border-yellow-300 mr-2"></div>
                 <span className="text-sm text-gray-600">Celebration</span>
               </div>
             </div>
@@ -288,34 +328,34 @@ export default function Calendar({ infant }: CalendarProps) {
       
       {/* Activities Panel */}
       <div>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <ActivityIcon className="h-5 w-5 mr-2" />
+        <Card className="shadow-lg h-full">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-xl">
+            <CardTitle className="flex items-center text-xl">
+              <ActivityIcon className="h-5 w-5 mr-2 text-indigo-600" />
               {t('activities')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             {selectedDateLog ? (
               <div>
-                <h3 className="font-medium text-lg mb-4">
+                <h3 className="font-bold text-lg mb-4 text-gray-800 border-b pb-2">
                   {formatDate(selectedDateLog.date)}
                 </h3>
                 
                 {selectedDateLog.activities.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {selectedDateLog.activities.map((activity, index) => (
                       <div 
                         key={index} 
-                        className={`border rounded-lg p-3 ${
+                        className={`border rounded-xl p-4 transition-all duration-200 hover:shadow-md ${
                           activity.type === 'special_occasion' 
-                            ? 'border-yellow-200 bg-yellow-50' 
-                            : 'border-gray-200'
+                            ? 'border-yellow-300 bg-yellow-50 shadow-sm' 
+                            : 'border-gray-200 bg-white shadow-sm'
                         }`}
                       >
-                        <div className="flex justify-between">
-                          <span className="font-medium">{activity.description}</span>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
+                        <div className="flex justify-between items-start">
+                          <span className="font-medium text-gray-800">{activity.description}</span>
+                          <span className={`text-xs px-3 py-1 rounded-full font-medium ${
                             activity.type === 'milestone' 
                               ? 'bg-blue-100 text-blue-800'
                               : activity.type === 'growth'
@@ -331,22 +371,31 @@ export default function Calendar({ infant }: CalendarProps) {
                         </div>
 
                         {activity.metadata && (
-                          <div className="mt-2 text-sm text-gray-600">
+                          <div className="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
                             {activity.type === 'growth' && (
-                              <div>
-                                {activity.metadata.height && <div>{t('height')}: {activity.metadata.height} cm</div>}
-                                {activity.metadata.weight && <div>{t('weight')}: {activity.metadata.weight} kg</div>}
-                                {activity.metadata.headCircumference && <div>{t('head_circumference')}: {activity.metadata.headCircumference} cm</div>}
+                              <div className="space-y-1">
+                                {activity.metadata.height && <div className="flex justify-between"><span className="font-medium">Height:</span> <span>{activity.metadata.height} cm</span></div>}
+                                {activity.metadata.weight && <div className="flex justify-between"><span className="font-medium">Weight:</span> <span>{activity.metadata.weight} kg</span></div>}
+                                {activity.metadata.headCircumference && <div className="flex justify-between"><span className="font-medium">Head Circumference:</span> <span>{activity.metadata.headCircumference} cm</span></div>}
                               </div>
                             )}
                             {activity.type === 'milestone' && (
-                              <div>
-                                {t('status')}: {activity.metadata?.status}
+                              <div className="flex justify-between">
+                                <span className="font-medium">Status:</span> 
+                                <span className={`font-medium ${
+                                  activity.metadata?.status === 'completed' 
+                                    ? 'text-green-600' 
+                                    : activity.metadata?.status === 'delayed' 
+                                      ? 'text-red-600' 
+                                      : 'text-yellow-600'
+                                }`}>
+                                  {activity.metadata?.status}
+                                </span>
                               </div>
                             )}
                             {activity.type === 'special_occasion' && activity.metadata?.occasion === 'celebration' && (
                               // Show detailed celebration info for all celebrations
-                              <div className="text-yellow-700 font-medium">
+                              <div className="text-center text-yellow-700 font-bold py-2">
                                 🎉 Happy {activity.metadata?.ageInMonths === 0 ? 'Birthday' : activity.metadata?.ageInMonths + getOrdinalSuffix(activity.metadata?.ageInMonths) + ' Month'} Celebration! 🎉
                               </div>
                             )}
@@ -358,23 +407,28 @@ export default function Calendar({ infant }: CalendarProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <ActivityIcon className="h-12 w-12 mx-auto text-gray-300" />
-                    <p className="mt-2">{t('no_activities')}</p>
+                  <div className="text-center py-12 text-gray-500">
+                    <ActivityIcon className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                    <p className="text-lg font-medium">{t('no_activities')}</p>
+                    <p className="text-sm mt-1">No activities recorded for this date</p>
                   </div>
                 )}
                 
                 {selectedDateLog.anniversary && (
-                  <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h4 className="font-medium text-yellow-800">Anniversary</h4>
-                    <p className="text-yellow-700">{selectedDateLog.anniversary.description}</p>
+                  <div className="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl">
+                    <h4 className="font-bold text-yellow-800 flex items-center">
+                      <Star className="h-5 w-5 mr-2 text-yellow-600 fill-current" />
+                      Anniversary
+                    </h4>
+                    <p className="text-yellow-700 mt-2">{selectedDateLog.anniversary.description}</p>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <CalendarIcon className="h-12 w-12 mx-auto text-gray-300" />
-                <p className="mt-2">{t('select_date')}</p>
+              <div className="text-center py-12 text-gray-500">
+                <CalendarIcon className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                <p className="text-lg font-medium">{t('select_date')}</p>
+                <p className="text-sm mt-1">Click on a date to view activities</p>
               </div>
             )}
           </CardContent>

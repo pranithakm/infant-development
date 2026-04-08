@@ -13,7 +13,6 @@ exports.getMilestones = async (req, res) => {
       data: milestones
     });
   } catch (error) {
-    console.error('Get milestones error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error while fetching milestones'
@@ -40,7 +39,6 @@ exports.getMilestone = async (req, res) => {
       data: milestone
     });
   } catch (error) {
-    console.error('Get milestone error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -76,7 +74,6 @@ exports.createMilestone = async (req, res) => {
       data: milestone
     });
   } catch (error) {
-    console.error('Create milestone error:', error);
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -119,7 +116,6 @@ exports.updateMilestone = async (req, res) => {
       data: milestone
     });
   } catch (error) {
-    console.error('Update milestone error:', error);
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -160,7 +156,6 @@ exports.deleteMilestone = async (req, res) => {
       message: 'Milestone deleted successfully'
     });
   } catch (error) {
-    console.error('Delete milestone error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -693,7 +688,6 @@ exports.initializeMilestones = async (req, res) => {
       data: milestones
     });
   } catch (error) {
-    console.error('Initialize milestones error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error while initializing milestones'

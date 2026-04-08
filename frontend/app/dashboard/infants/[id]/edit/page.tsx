@@ -78,7 +78,7 @@ export default function EditInfantPage({ params }: { params: { id: string } }) {
       // For now, we'll just show a success message since we don't have an update API endpoint
       // In a real implementation, you would call an update API here
       toast.success(t('infant_profile_updated'))
-      router.push(`/infants/${params.id}`)
+      router.push(`/dashboard/infants/${params.id}`)
     } catch (err) {
       toast.error(t('failed_to_update_infant'))
     } finally {

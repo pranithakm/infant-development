@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Infant, GrowthMeasurement } from '@/types';
-import { infantsAPI, growthAPI } from '@/lib/api';
+import { infantsAPI, growthAPI, routinesAPI } from '@/lib/api';
 
 interface InfantState {
   infants: Infant[];
@@ -18,6 +18,7 @@ interface InfantState {
   addGrowthMeasurement: (data: Partial<GrowthMeasurement>) => Promise<GrowthMeasurement | null>;
   updateGrowthMeasurement: (id: string, data: Partial<GrowthMeasurement>) => Promise<GrowthMeasurement | null>;
   deleteGrowthMeasurement: (id: string) => Promise<boolean>;
+  updateRoutineStatus: (infantId: string, routineId: string, date: string, completed: boolean) => Promise<Infant | null>;
   selectInfant: (infant: Infant | null) => void;
   clearError: () => void;
 }
@@ -140,6 +141,33 @@ export const useInfantStore = create<InfantState>()(
         } catch (error: any) {
           console.error('Error updating milestone status:', error);
           set({ error: error.response?.data?.message || 'Failed to update milestone', loading: false });
+          return null;
+        }
+      },
+
+      updateRoutineStatus: async (infantId: string, date: string, routineId: string, completed: boolean) => {
+        set({ loading: true, error: null });
+        try {
+          console.log('Updating routine status:', { infantId, date, routineId, completed });
+          const response = await routinesAPI.updateInfantRoutineStatus(infantId, date, routineId, completed);
+          const updatedInfant = response.data.data;
+          
+          console.log('API response:', response.data);
+          
+          // Update in the store
+          set((state) => ({
+            infants: state.infants.map((infant) =>
+              infant._id === infantId ? updatedInfant : infant
+            ),
+            selectedInfant: state.selectedInfant?._id === infantId ? updatedInfant : state.selectedInfant,
+            loading: false
+          }));
+          
+          return updatedInfant;
+        } catch (error: any) {
+          console.error('Error updating routine status:', error);
+          const errorMessage = error.response?.data?.message || error.message || 'Failed to update routine';
+          set({ error: errorMessage, loading: false });
           return null;
         }
       },

@@ -1,20 +1,23 @@
 const express = require('express');
+const router = express.Router();
 const { protect } = require('../middleware/auth');
+
 const {
   getAIInsights,
-  chatWithAI
+  chatWithAI,
+  getChatHistory,
+  regenerateInsights
 } = require('../controllers/aiController');
 
-const router = express.Router();
-
-// All routes are protected
+// protect all ai routes
 router.use(protect);
 
-// Routes
-router.route('/insights/:infantId')
-  .post(getAIInsights);
+// AI Insights
+router.post('/insights/:infantId', getAIInsights);
+router.post('/insights/:infantId/regenerate', regenerateInsights);
 
-router.route('/chat/:infantId')
-  .post(chatWithAI);
+// AI Chat
+router.post('/chat/:infantId', chatWithAI);
+router.get('/chat/:infantId', getChatHistory);
 
 module.exports = router;

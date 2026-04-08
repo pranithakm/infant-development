@@ -4,19 +4,19 @@ import { cn } from "@/lib/utils"
 import { AlertCircle, AlertTriangle, CheckCircle, Info } from "lucide-react"
 
 const alertVariants = cva(
-  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
+  "relative w-full rounded-xl border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
   {
     variants: {
       variant: {
         default: "bg-background text-foreground",
         destructive:
-          "border-red-200/80 text-red-800 dark:border-red-800 [&>svg]:text-red-600",
+          "border-red-200/80 text-red-800 dark:border-red-800 [&>svg]:text-red-600 bg-red-50",
         warning:
-          "border-yellow-200/80 text-yellow-800 dark:border-yellow-800 [&>svg]:text-yellow-600",
+          "border-yellow-200/80 text-yellow-800 dark:border-yellow-800 [&>svg]:text-yellow-600 bg-yellow-50",
         success:
-          "border-green-200/80 text-green-800 dark:border-green-800 [&>svg]:text-green-600",
+          "border-green-200/80 text-green-800 dark:border-green-800 [&>svg]:text-green-600 bg-green-50",
         info:
-          "border-blue-200/80 text-blue-800 dark:border-blue-800 [&>svg]:text-blue-600",
+          "border-blue-200/80 text-blue-800 dark:border-blue-800 [&>svg]:text-blue-600 bg-blue-50",
       },
     },
     defaultVariants: {
@@ -44,7 +44,7 @@ const AlertTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+    className={cn("mb-1 font-bold leading-none tracking-tight", className)}
     {...props}
   />
 ))

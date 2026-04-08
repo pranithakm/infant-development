@@ -1,46 +1,63 @@
-const axios = require('axios');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const { initializeAI, getAIInsights, regenerateInsights } = require('../controllers/aiController');
 
-const API_BASE_URL = 'http://localhost:5001/api';
+// Load environment variables
+dotenv.config();
 
-async function testAIAPI() {
+// MongoDB connection
+const connectDB = async () => {
   try {
-    console.log('Testing AI API endpoints...\n');
-    
-    // Test health check
-    const healthResponse = await axios.get(`${API_BASE_URL}/../health`);
-    console.log('Health Check:', healthResponse.data);
-    
-    // Since we need authentication to access infant data, we'll just test that the endpoint exists
-    // In a real scenario, you would need to authenticate first
-    
-    try {
-      // Test AI insights endpoint (this should fail without auth)
-      const aiResponse = await axios.post(`${API_BASE_URL}/ai/insights/test-id`);
-      console.log('AI Insights Response:', aiResponse.data);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        console.log('AI Insights endpoint exists (requires authentication)');
-      } else {
-        console.log('AI Insights endpoint error:', error.response?.data || error.message);
-      }
-    }
-    
-    try {
-      // Test AI chat endpoint (this should fail without auth)
-      const chatResponse = await axios.post(`${API_BASE_URL}/ai/chat/test-id`, { message: "Test" });
-      console.log('AI Chat Response:', chatResponse.data);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        console.log('AI Chat endpoint exists (requires authentication)');
-      } else {
-        console.log('AI Chat endpoint error:', error.response?.data || error.message);
-      }
-    }
-    
-    console.log('\nAI API tests completed!');
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/1000steps', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error('API Test Error:', error.response?.data || error.message);
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
   }
-}
+};
 
-testAIAPI();
+// Test AI integration
+const testAIIntegration = async () => {
+  try {
+    // Initialize AI service
+    await initializeAI();
+    
+    console.log('AI service initialized successfully');
+    
+    // Test with a sample infant ID (replace with a valid ID from your database)
+    // const infantId = 'YOUR_INFANT_ID_HERE';
+    // const mockReq = { params: { infantId } };
+    // const mockRes = {
+    //   status: (code) => {
+    //     console.log(`Response status: ${code}`);
+    //     return mockRes;
+    //   },
+    //   json: (data) => {
+    //     console.log('Response data:', JSON.stringify(data, null, 2));
+    //   }
+    // };
+    
+    // // Test initial insights generation
+    // console.log('Testing initial insights generation...');
+    // await getAIInsights(mockReq, mockRes);
+    
+    // // Test insights regeneration
+    // console.log('Testing insights regeneration...');
+    // await regenerateInsights(mockReq, mockRes);
+    
+  } catch (error) {
+    console.error('Error testing AI integration:', error);
+  }
+};
+
+// Run the test
+const runTest = async () => {
+  await connectDB();
+  await testAIIntegration();
+  process.exit(0);
+};
+
+runTest();

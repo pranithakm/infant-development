@@ -18,7 +18,9 @@ import {
   Weight,
   Activity,
   TrendingUp,
-  Filter
+  Filter,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import { useInfantStore } from '@/store/infantStore'
 import { Infant, InfantMilestone, GrowthMeasurement } from '@/types'
@@ -67,11 +69,17 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
   const [filteredMilestones, setFilteredMilestones] = useState<MilestoneWithStatus[]>([])
   const [lastUpdated, setLastUpdated] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    pending: true,
+    inProgress: true,
+    completed: true,
+    upcoming: true
+  })
   const { t, i18n } = useTranslation()
 
   // Function to capitalize words for English language
-  const capitalizeEnglish = (text: string) => {
-    if (i18n.language !== 'en') return text;
+  const capitalizeEnglish = (text: string | undefined) => {
+    if (!text || typeof text !== 'string' || i18n.language !== 'en') return text || '';
     return text.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
   };
 
@@ -268,16 +276,21 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
     (new Date().getMonth() - new Date(selectedInfant.dateOfBirth).getMonth()))
   )
 
+  // Toggle section expansion
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
   if (loading && !selectedInfant) {
     return (
-      <div className="flex-1 p-8">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex-1 p-4 md:p-8">
+        <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <svg className="animate-spin h-12 w-12 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="mt-4 text-gray-600">{t('loading_progress')}</p>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 text-lg font-medium">{t('loading_progress')}</p>
           </div>
         </div>
       </div>
@@ -286,28 +299,26 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
 
   if (error) {
     return (
-      <div className="flex-1 p-8">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="max-w-md text-center">
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
+      <div className="flex-1 p-4 md:p-8">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="max-w-md w-full text-center">
+            <div className="rounded-xl bg-red-50 p-6 border border-red-200 shadow-sm">
+              <div className="flex justify-center">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{t('error')}</h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
-                  </div>
+                  <AlertTriangle className="h-12 w-12 text-red-400" />
                 </div>
               </div>
-            </div>
-            <div className="mt-6">
-              <Link href="/dashboard">
-                <Button variant="outline">{t('back_to_dashboard')}</Button>
-              </Link>
+              <div className="mt-4">
+                <h3 className="text-lg font-medium text-red-800">{t('error')}</h3>
+                <div className="mt-2 text-red-700">
+                  <p>{error}</p>
+                </div>
+                <div className="mt-6">
+                  <Link href="/dashboard">
+                    <Button variant="outline">{t('back_to_dashboard')}</Button>
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -317,16 +328,18 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
 
   if (!selectedInfant) {
     return (
-      <div className="flex-1 p-8">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="max-w-md text-center">
-            <Activity className="h-16 w-16 text-gray-400 mx-auto" />
-            <h3 className="mt-4 text-xl font-medium text-gray-900">{t('infant_not_found')}</h3>
-            <p className="mt-2 text-gray-600">{t('infant_not_found_desc')}</p>
-            <div className="mt-6">
-              <Link href="/dashboard">
-                <Button variant="outline">{t('back_to_dashboard')}</Button>
-              </Link>
+      <div className="flex-1 p-4 md:p-8">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="max-w-md w-full text-center">
+            <div className="rounded-xl bg-white p-6 shadow-sm border border-gray-200">
+              <Activity className="h-16 w-16 text-gray-400 mx-auto" />
+              <h3 className="mt-4 text-xl font-medium text-gray-900">{t('infant_not_found')}</h3>
+              <p className="mt-2 text-gray-600">{t('infant_not_found_desc')}</p>
+              <div className="mt-6">
+                <Link href="/dashboard">
+                  <Button variant="outline">{t('back_to_dashboard')}</Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -337,12 +350,19 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
   return (
     <div className="flex-1 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{t('progress_overview')}</h1>
-        <p className="text-gray-600 mb-6">{t('infant_progress_summary')}</p>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="bg-gradient-to-br from-indigo-100 to-purple-100 p-3 rounded-full">
+            <TrendingUp className="h-8 w-8 text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{t('progress_overview')}</h1>
+            <p className="text-gray-600">{t('infant_progress_summary')}</p>
+          </div>
+        </div>
 
         {/* Progress Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <Card>
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-center">
                 <div className="rounded-full bg-blue-100 p-3">
@@ -356,7 +376,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-100 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-center">
                 <div className="rounded-full bg-green-100 p-3">
@@ -370,7 +390,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-center">
                 <div className="rounded-full bg-blue-100 p-3">
@@ -384,7 +404,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-to-br from-red-50 to-rose-50 border-red-100 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-center">
                 <div className="rounded-full bg-red-100 p-3">
@@ -398,7 +418,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-100 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-center">
                 <div className="rounded-full bg-yellow-100 p-3">
@@ -415,14 +435,14 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
 
         {/* Progress Visualization */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-xl">
+              <CardTitle className="flex items-center text-xl">
+                <TrendingUp className="h-5 w-5 mr-2 text-indigo-600" />
                 {t('progress_distribution')}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -473,14 +493,14 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Activity className="h-5 w-5 mr-2 text-blue-600" />
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-xl">
+              <CardTitle className="flex items-center text-xl">
+                <Activity className="h-5 w-5 mr-2 text-indigo-600" />
                 {t('category_breakdown')}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -509,37 +529,43 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
         </div>
 
         {/* Growth Summary */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center">
+        <Card className="mb-6 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-xl">
+            <CardTitle className="flex items-center text-xl">
               <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
               {t('growth_summary')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             {latestGrowth ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="border rounded-lg p-4">
+                <div className="border rounded-xl p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
                   <div className="flex items-center">
-                    <Ruler className="h-5 w-5 text-blue-600 mr-2" />
+                    <div className="rounded-full bg-blue-100 p-2 mr-3">
+                      <Ruler className="h-5 w-5 text-blue-600" />
+                    </div>
                     <h4 className="font-medium text-gray-900">{t('height')}</h4>
                   </div>
                   <p className="text-2xl font-bold mt-2">{latestGrowth.height} cm</p>
                   <p className="text-sm text-gray-600 mt-1">{new Date(latestGrowth.date).toLocaleDateString()}</p>
                 </div>
                 
-                <div className="border rounded-lg p-4">
+                <div className="border rounded-xl p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
                   <div className="flex items-center">
-                    <Weight className="h-5 w-5 text-green-600 mr-2" />
+                    <div className="rounded-full bg-green-100 p-2 mr-3">
+                      <Weight className="h-5 w-5 text-green-600" />
+                    </div>
                     <h4 className="font-medium text-gray-900">{t('weight')}</h4>
                   </div>
                   <p className="text-2xl font-bold mt-2">{latestGrowth.weight} kg</p>
                   <p className="text-sm text-gray-600 mt-1">{new Date(latestGrowth.date).toLocaleDateString()}</p>
                 </div>
                 
-                <div className="border rounded-lg p-4">
+                <div className="border rounded-xl p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 border-purple-100">
                   <div className="flex items-center">
-                    <Activity className="h-5 w-5 text-purple-600 mr-2" />
+                    <div className="rounded-full bg-purple-100 p-2 mr-3">
+                      <Activity className="h-5 w-5 text-purple-600" />
+                    </div>
                     <h4 className="font-medium text-gray-900">{t('head_circumference')}</h4>
                   </div>
                   <p className="text-2xl font-bold mt-2">{latestGrowth.headCircumference} cm</p>
@@ -547,7 +573,10 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
                 </div>
               </div>
             ) : (
-              <p className="text-gray-600">{t('no_growth_data')}</p>
+              <div className="text-center py-8">
+                <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">{t('no_growth_data')}</p>
+              </div>
             )}
             
             {recentGrowthMeasurements.length > 0 && (
@@ -565,7 +594,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {recentGrowthMeasurements.map((measurement) => (
-                        <tr key={measurement._id}>
+                        <tr key={measurement._id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(measurement.date).toLocaleDateString()}
                           </td>
@@ -589,7 +618,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
         </Card>
 
         {/* Category Filter */}
-        <Card className="mb-6">
+        <Card className="mb-6 shadow-lg">
           <CardContent className="p-0">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8 overflow-x-auto px-6 py-4">
@@ -597,9 +626,9 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                    className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center ${
                       selectedCategory === category
-                        ? 'border-blue-500 text-blue-600'
+                        ? 'border-indigo-500 text-indigo-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
@@ -617,11 +646,11 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
         </Card>
 
         {/* Overall Progress Bar */}
-        <Card className="mb-6">
+        <Card className="mb-6 shadow-lg">
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-lg font-medium text-gray-900">{t('overall_progress')}</h3>
-              <span className="text-lg font-bold text-blue-600">{completionPercentage}%</span>
+              <span className="text-lg font-bold text-indigo-600">{completionPercentage}%</span>
             </div>
             <Progress value={completionPercentage} className="h-4" />
           </CardContent>
@@ -629,10 +658,10 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
 
         {/* Alert for Not Started Milestones */}
         {notStartedMilestones.length > 0 && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>{t('pending_milestones_alert')}</AlertTitle>
-            <AlertDescription>
+          <Alert variant="destructive" className="mb-6 border-red-200 bg-red-50">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <AlertTitle className="text-red-800">{t('pending_milestones_alert')}</AlertTitle>
+            <AlertDescription className="text-red-700">
               {t('pending_milestones_alert_desc', { count: notStartedMilestones.length })}
             </AlertDescription>
           </Alert>
@@ -642,211 +671,259 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
         <div className="space-y-6">
           {/* Pending Milestones */}
           {pendingMilestonesList.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-red-600">
-                  <AlertTriangle className="h-5 w-5 mr-2" />
-                  {t('pending_milestones')}
+            <Card className="shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-red-50 to-rose-50 rounded-t-xl">
+                <CardTitle className="flex items-center justify-between text-red-700">
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 mr-2" />
+                    {t('pending_milestones')}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => toggleSection('pending')}
+                    className="text-red-700 hover:bg-red-100"
+                  >
+                    {expandedSections.pending ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pendingMilestonesList.map((milestone) => {
-                    const infantMilestone = selectedInfant.milestones.find(m => m.milestoneId._id === milestone._id);
-                    return (
-                      <Card key={milestone._id} className="border-red-200">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h3 className="font-medium text-gray-900">{milestone.name}</h3>
-                              <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+              {expandedSections.pending && (
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pendingMilestonesList.map((milestone) => {
+                      const infantMilestone = selectedInfant.milestones.find(m => m.milestoneId._id === milestone._id);
+                      return (
+                        <Card key={milestone._id} className="border-red-200 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h3 className="font-medium text-gray-900">{milestone.name}</h3>
+                                <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+                              </div>
+                              <Badge variant="destructive" className="bg-red-100 text-red-800">
+                                {t('pending')}
+                              </Badge>
                             </div>
-                            <Badge variant="destructive" className="bg-red-100 text-red-800">
-                              {t('pending')}
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-3">{milestone.description}</p>
-                          
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {milestone.minMonths !== undefined ? milestone.minMonths : 0}-{milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}
-                            </span>
-                          </div>
-                          
-                          <div className="mt-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('update_status')}</label>
-                            <select
-                              value={infantMilestone?.status || 'Not Started'}
-                              onChange={(e) => handleStatusChange(milestone._id, e.target.value)}
-                              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                              aria-label={t('update_milestone_status')}
-                            >
-                              <option value="Not Started">{t('not_started')}</option>
-                              <option value="Emerging">{t('emerging')}</option>
-                              <option value="Developing">{t('developing')}</option>
-                              <option value="Achieved">{t('achieved')}</option>
-                              <option value="Mastered">{t('mastered')}</option>
-                            </select>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
-              </CardContent>
+                            
+                            <p className="text-sm text-gray-600 mb-3">{milestone.description}</p>
+                            
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {milestone.minMonths !== undefined ? milestone.minMonths : 0}-{milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}
+                              </span>
+                            </div>
+                            
+                            <div className="mt-3">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('update_status')}</label>
+                              <select
+                                value={infantMilestone?.status || 'Not Started'}
+                                onChange={(e) => handleStatusChange(milestone._id, e.target.value)}
+                                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg"
+                                aria-label={t('update_milestone_status')}
+                              >
+                                <option value="Not Started">{t('not_started')}</option>
+                                <option value="Emerging">{t('emerging')}</option>
+                                <option value="Developing">{t('developing')}</option>
+                                <option value="Achieved">{t('achieved')}</option>
+                                <option value="Mastered">{t('mastered')}</option>
+                              </select>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              )}
             </Card>
           )}
 
           {/* In Progress Milestones */}
           {(inProgressMilestonesList.length > 0) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-blue-600">
-                  <Activity className="h-5 w-5 mr-2" />
-                  {t('in_progress_milestones')}
+            <Card className="shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-sky-50 rounded-t-xl">
+                <CardTitle className="flex items-center justify-between text-blue-700">
+                  <div className="flex items-center">
+                    <Activity className="h-5 w-5 mr-2" />
+                    {t('in_progress_milestones')}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => toggleSection('inProgress')}
+                    className="text-blue-700 hover:bg-blue-100"
+                  >
+                    {expandedSections.inProgress ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {inProgressMilestonesList.map((milestone) => {
-                    const infantMilestone = selectedInfant.milestones.find(m => m.milestoneId._id === milestone._id);
-                    return (
-                      <Card key={milestone._id} className="border-blue-200">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h3 className="font-medium text-gray-900">{milestone.name}</h3>
-                              <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+              {expandedSections.inProgress && (
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {inProgressMilestonesList.map((milestone) => {
+                      const infantMilestone = selectedInfant.milestones.find(m => m.milestoneId._id === milestone._id);
+                      return (
+                        <Card key={milestone._id} className="border-blue-200 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h3 className="font-medium text-gray-900">{milestone.name}</h3>
+                                <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+                              </div>
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                {milestone.infantMilestoneStatus}
+                              </Badge>
                             </div>
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                              {milestone.infantMilestoneStatus}
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-3">{milestone.description}</p>
-                          
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {milestone.minMonths !== undefined ? milestone.minMonths : 0}-{milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}
-                            </span>
-                          </div>
-                          
-                          <div className="mt-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('update_status')}</label>
-                            <select
-                              value={infantMilestone?.status || 'Not Started'}
-                              onChange={(e) => handleStatusChange(milestone._id, e.target.value)}
-                              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                              aria-label={t('update_milestone_status')}
-                            >
-                              <option value="Not Started">{t('not_started')}</option>
-                              <option value="Emerging">{t('emerging')}</option>
-                              <option value="Developing">{t('developing')}</option>
-                              <option value="Achieved">{t('achieved')}</option>
-                              <option value="Mastered">{t('mastered')}</option>
-                            </select>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
-              </CardContent>
+                            
+                            <p className="text-sm text-gray-600 mb-3">{milestone.description}</p>
+                            
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {milestone.minMonths !== undefined ? milestone.minMonths : 0}-{milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}
+                              </span>
+                            </div>
+                            
+                            <div className="mt-3">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('update_status')}</label>
+                              <select
+                                value={infantMilestone?.status || 'Not Started'}
+                                onChange={(e) => handleStatusChange(milestone._id, e.target.value)}
+                                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg"
+                                aria-label={t('update_milestone_status')}
+                              >
+                                <option value="Not Started">{t('not_started')}</option>
+                                <option value="Emerging">{t('emerging')}</option>
+                                <option value="Developing">{t('developing')}</option>
+                                <option value="Achieved">{t('achieved')}</option>
+                                <option value="Mastered">{t('mastered')}</option>
+                              </select>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              )}
             </Card>
           )}
 
           {/* Completed Milestones */}
           {completedMilestonesList.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-green-600">
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  {t('completed_milestones')}
+            <Card className="shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-xl">
+                <CardTitle className="flex items-center justify-between text-green-700">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    {t('completed_milestones')}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => toggleSection('completed')}
+                    className="text-green-700 hover:bg-green-100"
+                  >
+                    {expandedSections.completed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {completedMilestonesList.map((milestone) => {
-                    const infantMilestone = selectedInfant.milestones.find(m => m.milestoneId._id === milestone._id);
-                    return (
-                      <Card key={milestone._id} className="border-green-200">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h3 className="font-medium text-gray-900">{milestone.name}</h3>
-                              <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+              {expandedSections.completed && (
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {completedMilestonesList.map((milestone) => {
+                      const infantMilestone = selectedInfant.milestones.find(m => m.milestoneId._id === milestone._id);
+                      return (
+                        <Card key={milestone._id} className="border-green-200 hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h3 className="font-medium text-gray-900">{milestone.name}</h3>
+                                <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+                              </div>
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                {milestone.infantMilestoneStatus}
+                              </Badge>
                             </div>
-                            <Badge variant="secondary" className="bg-green-100 text-green-800">
-                              {milestone.infantMilestoneStatus}
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-3">{milestone.description}</p>
-                          
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {milestone.minMonths !== undefined ? milestone.minMonths : 0}-{milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}
-                            </span>
-                          </div>
-                          
-                          <div className="mt-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('update_status')}</label>
-                            <select
-                              value={infantMilestone?.status || 'Not Started'}
-                              onChange={(e) => handleStatusChange(milestone._id, e.target.value)}
-                              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                              aria-label={t('update_milestone_status')}
-                            >
-                              <option value="Not Started">{t('not_started')}</option>
-                              <option value="Emerging">{t('emerging')}</option>
-                              <option value="Developing">{t('developing')}</option>
-                              <option value="Achieved">{t('achieved')}</option>
-                              <option value="Mastered">{t('mastered')}</option>
-                            </select>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
-              </CardContent>
+                            
+                            <p className="text-sm text-gray-600 mb-3">{milestone.description}</p>
+                            
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {milestone.minMonths !== undefined ? milestone.minMonths : 0}-{milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}
+                              </span>
+                            </div>
+                            
+                            <div className="mt-3">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('update_status')}</label>
+                              <select
+                                value={infantMilestone?.status || 'Not Started'}
+                                onChange={(e) => handleStatusChange(milestone._id, e.target.value)}
+                                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg"
+                                aria-label={t('update_milestone_status')}
+                              >
+                                <option value="Not Started">{t('not_started')}</option>
+                                <option value="Emerging">{t('emerging')}</option>
+                                <option value="Developing">{t('developing')}</option>
+                                <option value="Achieved">{t('achieved')}</option>
+                                <option value="Mastered">{t('mastered')}</option>
+                              </select>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              )}
             </Card>
           )}
 
           {/* Upcoming Milestones */}
           {upcomingMilestonesList.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-yellow-600">
-                  <Clock className="h-5 w-5 mr-2" />
-                  {t('upcoming_milestones')}
+            <Card className="shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-t-xl">
+                <CardTitle className="flex items-center justify-between text-yellow-700">
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 mr-2" />
+                    {t('upcoming_milestones')}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => toggleSection('upcoming')}
+                    className="text-yellow-700 hover:bg-yellow-100"
+                  >
+                    {expandedSections.upcoming ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {upcomingMilestonesList.map((milestone) => (
-                    <Card key={milestone._id} className="border-yellow-200">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium text-gray-900">{milestone.name}</h3>
-                            <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+              {expandedSections.upcoming && (
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {upcomingMilestonesList.map((milestone) => (
+                      <Card key={milestone._id} className="border-yellow-200 hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-medium text-gray-900">{milestone.name}</h3>
+                              <p className="text-sm text-gray-600 mt-1">{milestone.category}</p>
+                            </div>
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                              {t('upcoming')}
+                            </Badge>
                           </div>
-                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                            {t('upcoming')}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 mt-2">{milestone.description}</p>
-                        <div className="mt-3 flex justify-between text-xs text-gray-500">
-                          <span>{t('min_age')}: {milestone.minMonths !== undefined ? milestone.minMonths : 0} {t('months')}</span>
-                          <span>{t('max_age')}: {milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
+                          <p className="text-sm text-gray-600 mt-2">{milestone.description}</p>
+                          <div className="mt-3 flex justify-between text-xs text-gray-500">
+                            <span>{t('min_age')}: {milestone.minMonths !== undefined ? milestone.minMonths : 0} {t('months')}</span>
+                            <span>{t('max_age')}: {milestone.maxMonths !== undefined ? milestone.maxMonths : 0} {t('months')}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
             </Card>
           )}
         </div>

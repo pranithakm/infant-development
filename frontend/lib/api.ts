@@ -22,7 +22,7 @@ api.interceptors.request.use(
         const parsed = JSON.parse(authStorage)
         token = parsed.state?.token
       } catch (e) {
-        console.warn('Failed to parse auth storage')
+        // Silent fail on auth storage parse error
       }
     }
     
@@ -47,7 +47,6 @@ api.interceptors.response.use(
   (error) => {
     // Don't retry on 429 errors (rate limiting)
     if (error.response?.status === 429) {
-      console.warn('Rate limit exceeded, please wait before making more requests');
       return Promise.reject(error);
     }
     
@@ -124,6 +123,27 @@ export const milestonesAPI = {
   initializeMilestones: () => api.post('/milestones/initialize'),
 }
 
+// Routines API
+export const routinesAPI = {
+  getRoutines: () => api.get('/routines'),
+  getInfantRoutinesForDate: (infantId: string, date: string) => 
+    api.get(`/routines/infants/${infantId}/date/${date}`),
+  updateInfantRoutineStatus: (infantId: string, date: string, routineId: string, completed: boolean) => 
+    api.put(`/routines/infants/${infantId}/date/${date}/routine/${routineId}`, { completed }),
+  createPersonalizedRoutine: (data: { infantId: string; name: string; description: string; category?: string; duration?: number }) =>
+    api.post('/routines/personalized', data),
+}
+
+// AI API
+export const aiAPI = {
+  getInsights: (infantId: string) => api.post(`/ai/insights/${infantId}`, {}),
+  chatWithAI: (infantId: string, message: string) => api.post(`/ai/chat/${infantId}`, {
+    message
+  }),
+  getChatHistory: (infantId: string) => api.get(`/ai/chat/${infantId}`),
+  regenerateInsights: (infantId: string) => api.post(`/ai/insights/${infantId}/regenerate`, {})
+}
+
 export const progressAPI = {
   getProgressSummary: (infantId: string) => 
     Promise.resolve({ data: { overallStats: [] } }),
@@ -134,12 +154,6 @@ export const activitiesAPI = {
     Promise.resolve({ data: { activities: [] } }),
   getRecommendations: (infantId: string) => 
     Promise.resolve({ data: { recommendations: [] } }),
-}
-
-// AI API
-export const aiAPI = {
-  getInsights: (infantId: string) => api.post(`/ai/insights/${infantId}`, {}),
-  chatWithAI: (infantId: string, message: string) => api.post(`/ai/chat/${infantId}`, { message }),
 }
 
 export default api

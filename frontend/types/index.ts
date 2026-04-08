@@ -1,10 +1,11 @@
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  role: string;
-  preferences: any;
-  isVerified: boolean;
+  role: 'admin' | 'parent' | 'healthcare_provider';
+  phone?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Milestone {
@@ -12,9 +13,9 @@ export interface Milestone {
   name: string;
   description: string;
   category: string;
-  recommendedAge: string;
   minMonths: number;
   maxMonths: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,68 +23,62 @@ export interface Milestone {
 export interface InfantMilestone {
   milestoneId: Milestone;
   status: 'Not Started' | 'Emerging' | 'Developing' | 'Achieved' | 'Mastered';
-  _id: string;
-}
-
-export interface MedicalInfo {
-  bloodType?: string;
-  allergies?: string[];
-  medications?: string[];
-  conditions?: string[];
-  pediatrician?: {
-    name?: string;
-    contact?: string;
-  };
-}
-
-export interface Parent {
-  user: string;
-  relationship: string;
-  isPrimary: boolean;
-  _id: string;
 }
 
 export interface GrowthMeasurement {
   _id: string;
-  infant: string;
-  date: string;
-  height?: number;
-  weight?: number;
-  headCircumference?: number;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface GrowthDataPoint {
   date: string;
   height?: number;
   weight?: number;
   headCircumference?: number;
 }
 
-export interface DateLogActivity {
-  type: 'milestone' | 'growth' | 'medical' | 'note' | 'custom' | 'special_occasion';
-  description: string;
-  referenceId?: string;
-  metadata?: any;
-  _id: string;
+export interface MedicalInfo {
+  bloodType?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'Unknown';
+  allergies?: string[];
+  medications?: string[];
+  conditions?: string[];
+  pediatrician?: {
+    name: string;
+    contact: string;
+  };
 }
 
-export interface DateLogAnniversary {
-  type: 'birth_month' | 'milestone_anniversary';
-  description: string;
-  referenceId?: string;
+export interface Parent {
+  user: User;
+  relationship: string;
+  isPrimary: boolean;
 }
 
-export interface DateLog {
-  _id: string;
-  infant: string;
+export interface CalendarActivity {
   date: string;
-  activities: DateLogActivity[];
-  anniversary?: DateLogAnniversary;
-  createdAt: string;
-  updatedAt: string;
+  activity: string;
+  type: 'milestone' | 'growth' | 'special_occasion';
+  status?: 'Not Started' | 'Emerging' | 'Developing' | 'Achieved' | 'Mastered';
+  values?: {
+    height?: number;
+    weight?: number;
+    headCircumference?: number;
+  };
+}
+
+export interface InfantInsights {
+  development_summary: string;
+  growth_analysis: string;
+  strengths: string[];
+  possible_delays: string[];
+  recommended_upcoming_milestones: string[];
+  routine_compliance: string;
+  suggested_routines: string[];
+  eligible_schemes: string[];
+  parenting_recommendations: string[];
+  nutrition_insights: string[];
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
 }
 
 export interface Infant {
@@ -93,18 +88,64 @@ export interface Infant {
   gender: 'male' | 'female' | 'other';
   birthWeight?: number;
   birthLength?: number;
-  birthHeadCircumference?: number;
+  birthHeadCircumference: number;
   currentHeight?: number;
   currentWeight?: number;
   currentHeadCircumference?: number;
-  growthData?: GrowthDataPoint[];
+  growthData: GrowthMeasurement[];
+  calendarActivities: CalendarActivity[];
+  routines: Array<{
+    date: string;
+    routineIds: string[];
+  }>;
   parents: Parent[];
-  medicalInfo?: MedicalInfo;
+  medicalInfo: MedicalInfo;
   milestones: InfantMilestone[];
+  insights: InfantInsights;
+  chatHistory: ChatMessage[];
   avatar?: string;
   isActive: boolean;
-  ageInMonths?: number;
-  ageInDays?: number;
   createdAt: string;
   updatedAt: string;
+  ageInMonths?: number;
+  ageInDays?: number;
+}
+
+export interface Routine {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'as_needed';
+  duration?: number; // in minutes
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Scheme {
+  _id: string;
+  name: string;
+  description: string;
+  type: string;
+  eligibility: string;
+  benefits: string;
+  applicationProcess: string;
+  stateScope: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuthState {
+  token: string | null;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface InfantState {
+  selectedInfant: Infant | null;
+  loading: boolean;
+  error: string | null;
 }

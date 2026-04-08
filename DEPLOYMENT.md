@@ -23,12 +23,6 @@ MONGODB_URI=mongodb://localhost:27017/1000steps
 JWT_SECRET=your_super_secure_jwt_secret_key_change_this_in_production
 JWT_EXPIRE=7d
 
-# OpenAI Configuration (Optional - for legacy features)
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Gemini API Configuration
-GEMINI_API_KEY=your_actual_gemini_api_key_here
-
 # Server Configuration
 PORT=5001
 NODE_ENV=production
@@ -142,7 +136,7 @@ server {
     server_name yourdomain.com;
 
     ssl_certificate /path/to/your/certificate.crt;
-    ssl_certificate_key /path/to/your/private.key;
+    ssl_certificate_key /path path/to/your/private.key;
 
     location / {
         proxy_pass http://localhost:3000;

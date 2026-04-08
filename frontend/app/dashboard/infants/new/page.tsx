@@ -54,7 +54,7 @@ export default function NewInfantPage() {
       
       if (result) {
         toast.success(t('infant_added_successfully'))
-        router.push(`/infants/${result._id}`)
+        router.push(`/dashboard/infants/${result._id}`)
       }
     } catch (err) {
       toast.error(t('failed_to_add_infant'))

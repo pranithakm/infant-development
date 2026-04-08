@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
-import { useMutation } from 'react-query'
+import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Eye, EyeOff, Mail, Lock, User, Baby } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -25,24 +26,23 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const { login } = useAuthStore()
+  const { t } = useTranslation()
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>()
   const password = watch('password')
 
-  const registerMutation = useMutation(
-    authAPI.register,
-    {
-      onSuccess: (response) => {
-        const { token, user } = response.data
-        login(token, user)
-        toast.success('Account created successfully!')
-        router.push('/dashboard')
-      },
-      onError: (error: any) => {
-        toast.error(error.response?.data?.message || 'Registration failed')
-      },
-    }
-  )
+  const registerMutation = useMutation({
+    mutationFn: authAPI.register,
+    onSuccess: (response) => {
+      const { token, user } = response.data
+      login(token, user)
+      toast.success(t('account_created_successfully'))
+      router.push('/dashboard')
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || t('registration_failed'))
+    },
+  })
 
   const onSubmit = (data: RegisterForm) => {
     const { confirmPassword, ...registerData } = data
@@ -57,61 +57,67 @@ export default function RegisterPage() {
             <Baby className="h-8 w-8 text-primary-600" />
             <span className="text-2xl font-bold text-gray-900">FirstSteps</span>
           </Link>
-          <p className="text-gray-600 mt-2">Create your account</p>
+          <p className="text-gray-600 mt-2">{t('create_your_account')}</p>
         </div>
 
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-center text-gray-900">Get Started</CardTitle>
+            <CardTitle className="text-center text-gray-900">{t('get_started')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('full_name')}</label>
                 <input
-                  {...register('name', { required: 'Name is required', minLength: 2 })}
+                  {...register('name', { 
+                    required: t('full_name_required'), 
+                    minLength: { value: 2, message: t('full_name_required') }
+                  })}
                   className="input w-full"
-                  placeholder="Enter your full name"
+                  placeholder={t('enter_your_full_name')}
                 />
                 {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')}</label>
                 <input
                   {...register('email', { 
-                    required: 'Email is required',
-                    pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
+                    required: t('email_required'),
+                    pattern: { value: /^\S+@\S+$/i, message: t('invalid_email') }
                   })}
                   type="email"
                   className="input w-full"
-                  placeholder="Enter your email"
+                  placeholder={t('enter_your_email')}
                 />
                 {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">I am a</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('i_am_a')}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="relative">
                     <input {...register('role')} type="radio" value="parent" className="sr-only peer" />
-                    <div className="w-full p-3 text-center border rounded-md cursor-pointer peer-checked:border-primary-600 peer-checked:bg-primary-50">Parent</div>
+                    <div className="w-full p-3 text-center border rounded-md cursor-pointer peer-checked:border-primary-600 peer-checked:bg-primary-50">{t('parent')}</div>
                   </label>
                   <label className="relative">
                     <input {...register('role')} type="radio" value="caregiver" className="sr-only peer" />
-                    <div className="w-full p-3 text-center border rounded-md cursor-pointer peer-checked:border-primary-600 peer-checked:bg-primary-50">Caregiver</div>
+                    <div className="w-full p-3 text-center border rounded-md cursor-pointer peer-checked:border-primary-600 peer-checked:bg-primary-50">{t('caregiver')}</div>
                   </label>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('password')}</label>
                 <div className="relative">
                   <input
-                    {...register('password', { required: 'Password is required', minLength: 6 })}
+                    {...register('password', { 
+                      required: t('password_is_required'), 
+                      minLength: { value: 6, message: t('password_min_length') }
+                    })}
                     type={showPassword ? 'text' : 'password'}
                     className="input w-full pr-10"
-                    placeholder="Enter your password"
+                    placeholder={t('enter_your_password')}
                   />
                   <button
                     type="button"
@@ -125,29 +131,29 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('confirm_password')}</label>
                 <input
                   {...register('confirmPassword', {
-                    required: 'Please confirm password',
-                    validate: value => value === password || 'Passwords do not match'
+                    required: t('please_confirm_password'),
+                    validate: value => value === password || t('passwords_must_match')
                   })}
                   type="password"
                   className="input w-full"
-                  placeholder="Confirm your password"
+                  placeholder={t('enter_your_password')}
                 />
                 {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>}
               </div>
 
-              <Button type="submit" className="w-full btn-primary" disabled={registerMutation.isLoading}>
-                {registerMutation.isLoading ? 'Creating Account...' : 'Create Account'}
+              <Button type="submit" className="w-full btn-primary" disabled={registerMutation.isPending}>
+                {registerMutation.isPending ? t('creating_account') : t('create_account')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{' '}
+                {t('already_have_an_account')}{' '}
                 <Link href="/auth/login" className="text-primary-600 hover:text-primary-700 font-medium">
-                  Sign in
+                  {t('sign_in_here')}
                 </Link>
               </p>
             </div>

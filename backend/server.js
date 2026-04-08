@@ -5,6 +5,9 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Import AI controller for initialization
+const { initializeAI } = require('./controllers/aiController');
+
 const app = express();
 
 // Security middleware
@@ -34,9 +37,17 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/1000steps')
+.then(() => {
+  console.log('MongoDB connected successfully');
+  
+  // Initialize AI service after MongoDB connection
+  initializeAI();
+})
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -53,12 +64,12 @@ app.use('/api/infants', require('./routes/infantRoutes'));
 app.use('/api/milestones', require('./routes/milestoneRoutes'));
 app.use('/api/growth', require('./routes/growthRoutes'));
 app.use('/api/dates', require('./routes/dateLogRoutes'));
+app.use('/api/routines', require('./routes/routineRoutes'));
+app.use('/api/schemes', require('./routes/schemeRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
@@ -93,5 +104,4 @@ const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
 });

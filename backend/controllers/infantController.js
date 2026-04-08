@@ -21,7 +21,6 @@ exports.getInfants = async (req, res) => {
       data: infants
     });
   } catch (error) {
-    console.error('Get infants error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error while fetching infants'
@@ -61,7 +60,6 @@ exports.getInfant = async (req, res) => {
       data: infant
     });
   } catch (error) {
-    console.error('Get infant error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -138,7 +136,6 @@ exports.createInfant = async (req, res) => {
       data: populatedInfant
     });
   } catch (error) {
-    console.error('Create infant error:', error);
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -271,7 +268,6 @@ exports.updateMilestoneStatus = async (req, res) => {
       data: populatedInfant
     });
   } catch (error) {
-    console.error('Update milestone status error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -367,7 +363,6 @@ exports.getCalendarActivities = async (req, res) => {
       data: calendarActivities
     });
   } catch (error) {
-    console.error('Get calendar activities error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -426,7 +421,6 @@ exports.deleteInfant = async (req, res) => {
       message: 'Infant deleted successfully'
     });
   } catch (error) {
-    console.error('Delete infant error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,

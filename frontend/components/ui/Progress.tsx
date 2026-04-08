@@ -11,13 +11,13 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
     <div
       ref={ref}
       className={cn(
-        "relative h-2 w-full overflow-hidden rounded-full bg-gray-200",
+        "relative h-4 w-full overflow-hidden rounded-full bg-gray-200 shadow-inner",
         className
       )}
       {...props}
     >
       <div
-        className="h-full w-full flex-1 bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-300 ease-in-out"
+        className="h-full w-full flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500 ease-in-out rounded-full"
         style={{ transform: `translateX(-${100 - (value / max) * 100}%)` }}
       />
     </div>

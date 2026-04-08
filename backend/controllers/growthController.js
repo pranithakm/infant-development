@@ -38,7 +38,6 @@ exports.getGrowthMeasurements = async (req, res) => {
       data: measurements
     });
   } catch (error) {
-    console.error('Get growth measurements error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -50,6 +49,15 @@ exports.getGrowthMeasurements = async (req, res) => {
       message: 'Server error while fetching growth measurements'
     });
   }
+};
+
+// Helper function to get the latest measurement for validation
+const getLatestMeasurement = async (infantId) => {
+  const measurements = await Growth.find({ infant: infantId })
+    .sort({ date: -1, createdAt: -1 }) // Sort by date descending, then by creation time
+    .limit(1);
+  
+  return measurements.length > 0 ? measurements[0] : null;
 };
 
 // @desc    Add a new growth measurement
@@ -79,6 +87,34 @@ exports.addGrowthMeasurement = async (req, res) => {
         success: false,
         message: 'Infant not found'
       });
+    }
+
+    // Get the latest measurement for validation
+    const latestMeasurement = await getLatestMeasurement(infantId);
+
+    // Validate that height and head circumference are not decreasing
+    if (latestMeasurement) {
+      // Validate height - must be >= last recorded height
+      if (height !== undefined && height !== null && latestMeasurement.height !== undefined && latestMeasurement.height !== null) {
+        if (height < latestMeasurement.height) {
+          return res.status(400).json({
+            success: false,
+            message: `Height must be greater than or equal to the last recorded value (${latestMeasurement.height} cm)`
+          });
+        }
+      }
+
+      // Validate head circumference - must be >= last recorded head circumference
+      if (headCircumference !== undefined && headCircumference !== null && latestMeasurement.headCircumference !== undefined && latestMeasurement.headCircumference !== null) {
+        if (headCircumference < latestMeasurement.headCircumference) {
+          return res.status(400).json({
+            success: false,
+            message: `Head circumference must be greater than or equal to the last recorded value (${latestMeasurement.headCircumference} cm)`
+          });
+        }
+      }
+
+      // Weight can decrease, so no validation needed for weight
     }
 
     // Create growth measurement
@@ -158,7 +194,6 @@ exports.addGrowthMeasurement = async (req, res) => {
       data: growth
     });
   } catch (error) {
-    console.error('Add growth measurement error:', error);
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -213,6 +248,39 @@ exports.updateGrowthMeasurement = async (req, res) => {
       });
     }
 
+    // Get all measurements except the current one being updated
+    const otherMeasurements = await Growth.find({
+      infant: infant._id,
+      _id: { $ne: req.params.id }
+    }).sort({ date: -1, createdAt: -1 });
+
+    // Validate that height and head circumference are not decreasing
+    if (otherMeasurements.length > 0) {
+      const latestMeasurement = otherMeasurements[0];
+      
+      // Validate height - must be >= last recorded height
+      if (height !== undefined && height !== null && latestMeasurement.height !== undefined && latestMeasurement.height !== null) {
+        if (height < latestMeasurement.height) {
+          return res.status(400).json({
+            success: false,
+            message: `Height must be greater than or equal to the last recorded value (${latestMeasurement.height} cm)`
+          });
+        }
+      }
+
+      // Validate head circumference - must be >= last recorded head circumference
+      if (headCircumference !== undefined && headCircumference !== null && latestMeasurement.headCircumference !== undefined && latestMeasurement.headCircumference !== null) {
+        if (headCircumference < latestMeasurement.headCircumference) {
+          return res.status(400).json({
+            success: false,
+            message: `Head circumference must be greater than or equal to the last recorded value (${latestMeasurement.headCircumference} cm)`
+          });
+        }
+      }
+
+      // Weight can decrease, so no validation needed for weight
+    }
+
     // Update growth measurement
     growth = await Growth.findByIdAndUpdate(
       req.params.id,
@@ -260,7 +328,6 @@ exports.updateGrowthMeasurement = async (req, res) => {
       data: growth
     });
   } catch (error) {
-    console.error('Update growth measurement error:', error);
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -334,7 +401,6 @@ exports.deleteGrowthMeasurement = async (req, res) => {
       message: 'Growth measurement deleted successfully'
     });
   } catch (error) {
-    console.error('Delete growth measurement error:', error);
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
