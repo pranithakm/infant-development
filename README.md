@@ -1,158 +1,183 @@
-# FirstSteps
+# FirstSteps - Infant Development Tracking Platform
 
-A full-stack web application with AI-powered developmental monitoring and personalized recommendations for infants aged 0-3 years.
+## Overview
+A full-stack web application for tracking infant development and providing personalized recommendations for infants aged 0-3 years.
 
-## Features
-
-- **AI-Powered Analysis**: Intelligent monitoring and personalized recommendations
-- **Milestone Tracking**: Comprehensive tracking of developmental milestones
-- **Growth Tracking**: Monitor height, weight, and head circumference with interactive charts, including birth values as starting points
-- **Interactive Dashboard**: Visual progress tracking and analytics
-- **Chatbot Interface**: AI-powered guidance for parents and caregivers
-- **Secure Data Storage**: HIPAA-compliant data handling
-- **Real-time Notifications**: Milestone reminders and activity suggestions
+## Key Features
+- **Developmental Milestone Tracking**: Comprehensive monitoring across cognitive, physical, language, and social-emotional domains
+- **Growth Monitoring**: Visual charts and progress tracking for height, weight, and head circumference
+- **Activity Calendar**: Daily activity logging and scheduling
+- **Routine Management**: Customizable daily routines and habit tracking
+- **Progress Analytics**: Detailed insights and progress reports
+- **AI-Powered Insights**: Personalized developmental recommendations using Google Gemini
+- **Multi-language Support**: Available in English, Tamil, Hindi, and Telugu
 
 ## Tech Stack
+- **Frontend**: Next.js 14, React, TypeScript, TailwindCSS
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT-based authentication
+- **AI Integration**: Google Gemini API
+- **Deployment**: Docker-ready with PM2 process management
 
-### Frontend
-- **Next.js 14** - React framework with app router
-- **TailwindCSS** - Utility-first CSS framework
-- **Chart.js** - Data visualization
-- **React Hook Form** - Form handling
-- **Zustand** - State management
-
-### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **MongoDB** - Database
-- **JWT** - Authentication
-- **OpenAI API** - AI agent integration
-- **Mongoose** - MongoDB ODM
+## Prerequisites
+- Node.js (v18 or higher)
+- MongoDB (v5.0 or higher)
+- npm or yarn package manager
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 18+
-- MongoDB (local or Atlas)
-- OpenAI API key
-
-### Backend Setup
+### 1. Clone the Repository
 ```bash
+git clone <repository-url>
+cd firststeps
+```
+
+### 2. Environment Setup
+```bash
+# Backend setup
+cd backend
+cp .env.example .env
+# Edit .env with your values (especially MONGODB_URI and GEMINI_API_KEY)
+
+# Frontend setup
+cd ../frontend
+cp .env.example .env
+# Edit .env with your values
+```
+
+### 3. Install Dependencies
+```bash
+# Install backend dependencies
 cd backend
 npm install
-cp .env.example .env
-# Edit .env with your values (especially OPENAI_API_KEY and MONGODB_URI)
-npm run seed:milestones  # Seed basic milestones
-npm run dev
-```
 
-### Frontend Setup
-```bash
-cd frontend
+# Install frontend dependencies
+cd ../frontend
 npm install
-cp .env.local.example .env.local
-# Edit .env.local if needed
+```
+
+### 4. Database Initialization
+```bash
+# Start MongoDB service
+# Then initialize data
+cd backend
+npm run seed:milestones
+npm run seed:routines
+npm run seed:schemes
+```
+
+### 5. Run the Application
+```bash
+# Start backend server
+cd backend
+npm run dev
+
+# Start frontend development server (in a new terminal)
+cd frontend
 npm run dev
 ```
 
-Visit `http://localhost:3000` to access the application.
-
-### First Time Setup
-1. **Set up environment variables** in both backend/.env and frontend/.env.local
-2. **Get an OpenAI API key** from https://platform.openai.com
-3. **Start MongoDB** (local or use MongoDB Atlas)
-4. **Seed milestones** by running `npm run seed:milestones` in the backend directory
-5. **Start both servers** using the start script: `./start.sh` or manually start both
-6. **Register a new account** and start tracking your infant's development!
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login and get JWT token
-- `GET /api/auth/me` - Get current user profile
-- `PUT /api/auth/profile` - Update user profile
-- `POST /api/auth/change-password` - Change user password
-
-### Milestones
-- `GET /api/milestones` - Get all milestones
-- `GET /api/milestones/:id` - Get a specific milestone
-- `POST /api/milestones/initialize` - Initialize default milestones (setup only)
-
-### Infants
-- `GET /api/infants` - Get all infants for logged in parent
-- `POST /api/infants` - Create a new infant
-- `GET /api/infants/:id` - Get a specific infant with milestone progress
-- `PUT /api/infants/:id/milestones/:milestoneId` - Update milestone status for infant
-- `DELETE /api/infants/:id` - Soft delete an infant
-
-### Growth Measurements
-- `GET /api/growth/infant/:infantId` - Get all growth measurements for an infant
-- `POST /api/growth` - Add a new growth measurement
-- `PUT /api/growth/:id` - Update a growth measurement
-- `DELETE /api/growth/:id` - Delete a growth measurement
-
-### AI Insights (Gemini API)
-- `POST /api/ai/insights/:infantId` - Get AI-powered developmental insights for an infant
-- `POST /api/ai/chat/:infantId` - Chat with AI about infant development
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5001
 
 ## Environment Variables
 
 ### Backend (.env)
-```bash
-# Database
-MONGODB_URI=mongodb://localhost:27017/1000steps
-
-# JWT Configuration
-JWT_SECRET=your_super_secure_jwt_secret_key_change_this_in_production
-JWT_EXPIRE=7d
-
-# OpenAI Configuration (Optional - for legacy features)
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Gemini API Configuration
-GEMINI_API_KEY=your_actual_gemini_api_key_here
-
-# Server Configuration
-PORT=5001
+```
 NODE_ENV=development
-
-# Email Configuration (Optional)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_password
-
-# Frontend URL
-FRONTEND_URL=http://localhost:3000
+PORT=5001
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRE=7d
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
-### Frontend (.env.local)
-```bash
-# Backend API URL
+### Frontend (.env)
+```
 NEXT_PUBLIC_API_URL=http://localhost:5001/api
 ```
 
-## Setting up Gemini API
+## API Endpoints
 
-To use the AI-powered insights feature, you need to:
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user profile
+- `PUT /api/auth/profile` - Update user profile
+- `POST /api/auth/change-password` - Change password
 
-1. Go to [Google AI Studio](https://aistudio.google.com/)
-2. Create a new API key
-3. Copy the API key
-4. Paste it in the backend `.env` file as the value for `GEMINI_API_KEY`
-5. Restart the backend server
+### Infants
+- `GET /api/infants` - Get all infants for current user
+- `GET /api/infants/:id` - Get specific infant details
+- `POST /api/infants` - Create new infant profile
+- `PUT /api/infants/:id` - Update infant profile
+- `DELETE /api/infants/:id` - Delete infant profile
+- `PUT /api/infants/:infantId/milestones/:milestoneId` - Update milestone status
 
-## Development
+### Milestones
+- `GET /api/milestones` - Get all developmental milestones
+- `GET /api/milestones/:id` - Get specific milestone details
+- `POST /api/milestones/initialize` - Initialize milestone data
 
-The application is structured as follows:
-- `/backend` - Express.js API server
-- `/frontend` - Next.js React application
+### Growth Tracking
+- `GET /api/growth/infant/:infantId` - Get growth measurements for infant
+- `POST /api/growth` - Add new growth measurement
+- `PUT /api/growth/:id` - Update growth measurement
+- `DELETE /api/growth/:id` - Delete growth measurement
+
+### Routines
+- `GET /api/routines` - Get all routines
+- `GET /api/routines/infants/:infantId/date/:date` - Get routines for infant on specific date
+- `PUT /api/routines/infants/:infantId/date/:date/routine/:routineId` - Update routine completion status
+
+### Schemes
+- `GET /api/schemes` - Get all government schemes
+- `GET /api/schemes/:id` - Get specific scheme details
+
+### AI Insights
+- `POST /api/ai/insights/:infantId` - Generate developmental insights for infant
+- `POST /api/ai/insights/:infantId/regenerate` - Regenerate developmental insights for infant
+- `POST /api/ai/chat/:infantId` - Chat with AI assistant
+- `GET /api/ai/chat/:infantId` - Get chat history
+
+## AI Integration
+
+The application uses Google's Gemini API to generate personalized developmental insights for each infant. The AI service:
+
+1. Loads common datasets (milestones, routines, schemes) from MongoDB on startup
+2. Combines infant-specific data with common datasets when generating insights
+3. Returns structured JSON responses with developmental recommendations
+4. Stores insights in the infant's profile for future reference
+
+To enable AI features:
+1. Add your Google Gemini API key to the backend `.env` file
+2. Restart the backend server
+3. Access AI insights through the infant dashboard
 
 ## Deployment
 
-Instructions for deploying to production environments are included in the respective directories.
+### Production Build
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Start production servers
+cd ../backend
+npm start
+```
+
+### Docker Deployment
+The application includes Docker configuration files for easy deployment.
+
+## Contributing
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a pull request
 
 ## License
-
-MIT License# FirstSteps - Infant Development Tracking Application
+This project is licensed under the MIT License.# infant
