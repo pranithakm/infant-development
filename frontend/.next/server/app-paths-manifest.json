@@ -1,0 +1,8 @@
+{
+  "/infants/[id]/page": "app/infants/[id]/page.js",
+  "/dashboard/infants/new/page": "app/dashboard/infants/new/page.js",
+  "/dashboard/infants/[id]/milestones/page": "app/dashboard/infants/[id]/milestones/page.js",
+  "/dashboard/schemes/page": "app/dashboard/schemes/page.js",
+  "/dashboard/infants/[id]/tracker/page": "app/dashboard/infants/[id]/tracker/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
+}
