@@ -976,6 +976,13 @@ export default function TrackerPage({ params }: { params: { id: string } }) {
                           {routine.description}
                         </p>
                       )}
+                      {routine.isPersonalized && (
+                        <p className="text-xs mt-1 text-indigo-500 font-medium">
+                          📅 {routine.fromDate && routine.toDate
+                            ? `${new Date(routine.fromDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${new Date(routine.toDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+                            : 'Daily'}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className={`text-sm font-medium px-3 py-1 rounded-full ${

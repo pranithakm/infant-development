@@ -67,6 +67,8 @@ app.use('/api/dates', require('./routes/dateLogRoutes'));
 app.use('/api/routines', require('./routes/routineRoutes'));
 app.use('/api/schemes', require('./routes/schemeRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/agent', require('./routes/agentRoutes'));
+app.use('/api/health-prediction', require('./routes/healthRoutes'));
 
 // Global error handler
 app.use((err, req, res, next) => {

@@ -9,10 +9,13 @@
     "test": "jest",
     "seed:milestones": "node scripts/initializeMilestones.js",
     "seed:routines": "node scripts/initializeRoutines.js",
-    "seed:schemes": "node scripts/initializeSchemes.js"
+    "seed:schemes": "node scripts/initializeSchemes.js",
+    "seed:demo": "node scripts/seedDemoData.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.85.0",
     "@google/generative-ai": "^0.24.1",
+    "axios": "^1.15.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -22,7 +25,8 @@
     "helmet": "^7.1.0",
     "hnswlib-node": "^3.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.3"
+    "mongoose": "^8.0.3",
+    "openai": "^6.33.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",

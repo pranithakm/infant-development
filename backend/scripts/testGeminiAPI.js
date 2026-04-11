@@ -16,7 +16,7 @@ async function testGeminiAPI() {
     
     // Use the same model as in the controller
     console.log(`Trying model: gemini-flash-latest`);
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
     
     // Test prompt similar to what we use in the controller
     const prompt = `

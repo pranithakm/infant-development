@@ -87,7 +87,7 @@ exports.createRoutine = async (req, res) => {
 // @access  Private
 exports.createPersonalizedRoutine = async (req, res) => {
   try {
-    const { infantId, name, description, category, duration } = req.body;
+    const { infantId, name, description, category, duration, fromDate, toDate } = req.body;
 
     // Validate required fields
     if (!infantId) {
@@ -134,7 +134,9 @@ exports.createPersonalizedRoutine = async (req, res) => {
       duration,
       isPersonalized: true,
       infantId: infantId,
-      isActive: true
+      isActive: true,
+      fromDate: fromDate || null,
+      toDate: toDate || null,
     };
 
     const routine = await Routine.create(routineData);
@@ -438,12 +440,28 @@ exports.getInfantRoutinesForDate = async (req, res) => {
       ]
     });
 
+    // Filter personalized routines by date range
+    const queryDate = new Date(date);
+    queryDate.setHours(0, 0, 0, 0);
+    const filteredRoutines = allRoutines.filter(routine => {
+      if (!routine.isPersonalized) return true; // General routines always show
+      // If no date range set, treat as daily (always show)
+      if (!routine.fromDate && !routine.toDate) return true;
+      const from = routine.fromDate ? new Date(routine.fromDate) : null;
+      const to = routine.toDate ? new Date(routine.toDate) : null;
+      if (from) from.setHours(0, 0, 0, 0);
+      if (to) to.setHours(23, 59, 59, 999);
+      if (from && queryDate < from) return false;
+      if (to && queryDate > to) return false;
+      return true;
+    });
+
     // Find routines completed for the specific date
     const dateEntry = infant.routines.find(entry => entry.date === date);
     const completedRoutineIds = dateEntry ? dateEntry.routineIds.map(id => id.toString()) : [];
 
     // Map all routines with completion status
-    const routinesWithStatus = allRoutines.map(routine => ({
+    const routinesWithStatus = filteredRoutines.map(routine => ({
       ...routine.toObject(),
       completed: completedRoutineIds.includes(routine._id.toString())
     }));

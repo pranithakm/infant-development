@@ -130,7 +130,7 @@ export const routinesAPI = {
     api.get(`/routines/infants/${infantId}/date/${date}`),
   updateInfantRoutineStatus: (infantId: string, date: string, routineId: string, completed: boolean) => 
     api.put(`/routines/infants/${infantId}/date/${date}/routine/${routineId}`, { completed }),
-  createPersonalizedRoutine: (data: { infantId: string; name: string; description: string; category?: string; duration?: number }) =>
+  createPersonalizedRoutine: (data: { infantId: string; name: string; description: string; category?: string; duration?: number; fromDate?: string; toDate?: string }) =>
     api.post('/routines/personalized', data),
 }
 
@@ -144,15 +144,36 @@ export const aiAPI = {
   regenerateInsights: (infantId: string) => api.post(`/ai/insights/${infantId}/regenerate`, {})
 }
 
+// Agent API (Global AI Agent)
+export const agentAPI = {
+  chat: (data: { infantId?: string; question: string; currentPage: string; lastAction?: string }) =>
+    api.post('/agent/chat', data),
+  getMemory: () => api.get('/agent/memory'),
+  clearMemory: () => api.delete('/agent/memory'),
+}
+
+// Health Prediction API (ML Model)
+export const healthPredictionAPI = {
+  getStatus: () => api.get('/health-prediction/status'),
+  predict: (data: {
+    sleep_hours: number;
+    feeding_count: number;
+    weight_change: number;
+    temperature: number;
+    activity_level: number;
+  }) => api.post('/health-prediction/predict', data),
+  trainModel: () => api.post('/health-prediction/train'),
+}
+
 export const progressAPI = {
-  getProgressSummary: (infantId: string) => 
+  getProgressSummary: (infantId: string) =>
     Promise.resolve({ data: { overallStats: [] } }),
 }
 
 export const activitiesAPI = {
-  getActivities: (params?: any) => 
+  getActivities: (params?: any) =>
     Promise.resolve({ data: { activities: [] } }),
-  getRecommendations: (infantId: string) => 
+  getRecommendations: (infantId: string) =>
     Promise.resolve({ data: { recommendations: [] } }),
 }
 

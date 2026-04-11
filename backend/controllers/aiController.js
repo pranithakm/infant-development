@@ -26,7 +26,7 @@ const initializeAI = async () => {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     
     // Use gemini-2.0-flash as it's available and suitable for our use case
-    model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     console.log('AI model initialized successfully');
     
     // Load common data from MongoDB

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useInfantStore } from '@/store/infantStore'
-import { Lightbulb, TrendingUp, Activity, Target, Sparkles, MessageCircle, Send, Loader, RotateCcw, Plus } from 'lucide-react'
+import { Lightbulb, TrendingUp, Activity, Target, Sparkles, Loader, RotateCcw, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import { aiAPI, routinesAPI } from '@/lib/api'
@@ -33,13 +33,9 @@ const formatAIResponse = (response: string) => {
 
 export default function InsightsPage({ params }: { params: { id: string } }) {
   const { selectedInfant, loading, error, fetchInfant } = useInfantStore()
-  const [chatMessage, setChatMessage] = useState('')
-  const [chatHistory, setChatHistory] = useState<{ role: string; content: string }[]>([])
   const [aiInsights, setAiInsights] = useState<any>(null)
   const [insightsLoading, setInsightsLoading] = useState(false)
   const [insightsError, setInsightsError] = useState<string | null>(null)
-  const [chatLoading, setChatLoading] = useState(false)
-  const [chatError, setChatError] = useState<string | null>(null)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -59,13 +55,6 @@ export default function InsightsPage({ params }: { params: { id: string } }) {
         fetchAIInsights()
       }
       
-      // Set chat history if available
-      if (selectedInfant.chatHistory) {
-        setChatHistory(selectedInfant.chatHistory.map((msg: any) => ({
-          role: msg.role,
-          content: msg.content
-        })))
-      }
     }
   }, [selectedInfant])
 
@@ -87,50 +76,6 @@ export default function InsightsPage({ params }: { params: { id: string } }) {
       setInsightsError(errorMessage)
     } finally {
       setInsightsLoading(false)
-    }
-  }
-
-  const fetchChatHistory = async () => {
-    if (!selectedInfant) return
-    
-    try {
-      const response = await aiAPI.getChatHistory(selectedInfant._id)
-      setChatHistory(response.data.data.chatHistory)
-    } catch (err: any) {
-      console.error('Error fetching chat history:', err)
-    }
-  }
-
-  const handleSendMessage = async () => {
-    if (!chatMessage.trim() || !selectedInfant || chatLoading) return
-    
-    // Add user message to chat
-    const newUserMessage = { role: 'user', content: chatMessage }
-    const updatedHistory = [...chatHistory, newUserMessage]
-    setChatHistory(updatedHistory)
-    setChatMessage('')
-    setChatLoading(true)
-    setChatError(null)
-    
-    try {
-      const response = await aiAPI.chatWithAI(selectedInfant._id, chatMessage)
-      const newAIMessage = { role: 'assistant', content: response.data.data.response }
-      const finalHistory = [...updatedHistory, newAIMessage]
-      setChatHistory(finalHistory)
-    } catch (error: any) {
-      console.error('Error chatting with AI:', error)
-      // Extract more detailed error message from the response
-      let errorMessage = t('failed_to_get_ai_response') || 'Failed to get response from AI'
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-      setChatError(errorMessage)
-      // Remove the user message if AI failed to respond
-      setChatHistory(updatedHistory)
-    } finally {
-      setChatLoading(false)
     }
   }
 
@@ -194,13 +139,6 @@ export default function InsightsPage({ params }: { params: { id: string } }) {
       }
       
       alert(errorMessage);
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
     }
   }
 
@@ -454,90 +392,6 @@ export default function InsightsPage({ params }: { params: { id: string } }) {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* AI Chat */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <MessageCircle className="h-5 w-5 mr-2 text-blue-500" />
-              {t('ask_ai_assistant')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Chat History */}
-              <div className="h-64 overflow-y-auto p-4 bg-gray-50 rounded-lg">
-                {chatHistory.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-gray-500">
-                    <p>{t('start_conversation_with_ai')}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {chatHistory.map((message, index) => (
-                      <div 
-                        key={index} 
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div 
-                          className={`max-w-md lg:max-w-lg xl:max-w-xl px-4 py-2 rounded-lg ${
-                            message.role === 'user' 
-                              ? 'bg-blue-600 text-white' 
-                              : 'bg-gray-200 text-gray-800'
-                          }`}
-                          dangerouslySetInnerHTML={{ 
-                            __html: message.role === 'assistant' 
-                              ? formatAIResponse(message.content) 
-                              : message.content.replace(/\n/g, '<br />')
-                          }}
-                        >
-                        </div>
-                      </div>
-                    ))}
-                    {chatLoading && (
-                      <div className="flex justify-start">
-                        <div className="max-w-md lg:max-w-lg xl:max-w-xl px-4 py-2 rounded-lg bg-gray-200 text-gray-800">
-                          <div className="flex items-center">
-                            <Loader className="h-4 w-4 animate-spin mr-1" />
-                            {t('thinking')}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              {/* Chat Error */}
-              {chatError && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-2">
-                  <p className="text-red-800 text-sm">{chatError}</p>
-                </div>
-              )}
-              
-              {/* Chat Input */}
-              <div className="flex">
-                <div className="flex-1 relative">
-                  <textarea
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={t('ask_about_development')}
-                    className="block w-full pr-12 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    rows={2}
-                    disabled={!selectedInfant || chatLoading}
-                  />
-                </div>
-                <Button 
-                  onClick={handleSendMessage}
-                  className="ml-2"
-                  disabled={!chatMessage.trim() || !selectedInfant || chatLoading}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

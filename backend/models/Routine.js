@@ -35,6 +35,14 @@ const routineSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  fromDate: {
+    type: Date,
+    default: null
+  },
+  toDate: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

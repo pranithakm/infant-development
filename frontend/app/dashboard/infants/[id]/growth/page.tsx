@@ -24,6 +24,7 @@ import Link from 'next/link';
 import AddMeasurementForm from './AddMeasurementForm';
 import { getReferenceValues } from '@/data/growthReferenceData';
 import { useTranslation } from 'react-i18next';
+import HealthPredictionCard from '@/components/dashboard/HealthPredictionCard';
 
 ChartJS.register(
   CategoryScale,
@@ -612,6 +613,15 @@ const GrowthTrackingPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Health Score Prediction Section */}
+      {infant && (
+        <HealthPredictionCard 
+          infantId={id}
+          latestWeight={latestMeasurements?.weight}
+          previousWeight={chartDataPoints.length > 1 ? chartDataPoints[chartDataPoints.length - 2]?.weight : undefined}
+        />
+      )}
 
       {chartDataPoints.length === 0 && !showForm && (
         <Card>
