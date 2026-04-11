@@ -1,4 +1,9 @@
 {
-  "/dashboard/schemes/page": "app/dashboard/schemes/page.js",
-  "/dashboard/infants/[id]/insights/page": "app/dashboard/infants/[id]/insights/page.js"
+  "/page": "app/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/infants/[id]/insights/page": "app/dashboard/infants/[id]/insights/page.js",
+  "/dashboard/infants/[id]/tracker/page": "app/dashboard/infants/[id]/tracker/page.js",
+  "/dashboard/infants/[id]/growth/page": "app/dashboard/infants/[id]/growth/page.js",
+  "/dashboard/infants/[id]/progress/page": "app/dashboard/infants/[id]/progress/page.js"
 }
