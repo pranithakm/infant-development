@@ -69,6 +69,7 @@ app.use('/api/schemes', require('./routes/schemeRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/agent', require('./routes/agentRoutes'));
 app.use('/api/health-prediction', require('./routes/healthRoutes'));
+app.use('/api/assistant', require('./routes/assistantRoutes'));
 
 // Global error handler
 app.use((err, req, res, next) => {

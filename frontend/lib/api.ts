@@ -177,4 +177,10 @@ export const activitiesAPI = {
     Promise.resolve({ data: { recommendations: [] } }),
 }
 
+// Assistant API (Voice AI Assistant)
+export const assistantAPI = {
+  chat: (message: string, language: string, infantId?: string, history: any[] = [], location?: { lat: number, lng: number }) => 
+    api.post('/assistant/chat', { message, language, infantId, history, location }),
+}
+
 export default api
