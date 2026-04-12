@@ -91,15 +91,15 @@ function addDaysLocal(base: Date, days: number): Date {
 }
 
 function navigatePathLabel(path: string): string {
-  if (path.includes('/schemes')) return 'Government schemes'
-  if (path.includes('/tracker')) return 'Daily tracker'
-  if (path.includes('/growth')) return 'Growth'
-  if (path.includes('/milestones')) return 'Milestones'
-  if (path.includes('/insights')) return 'Insights'
-  if (path.includes('/calendar')) return 'Calendar'
-  if (path.includes('/progress')) return 'Progress'
-  if (path === '/dashboard' || path.endsWith('/dashboard')) return 'Dashboard'
-  return 'Open page'
+  if (path.includes('/schemes')) return '🏛️ Government schemes'
+  if (path.includes('/tracker')) return '🔍 Daily tracker'
+  if (path.includes('/growth')) return '📈 Growth'
+  if (path.includes('/milestones')) return '🎯 Milestones'
+  if (path.includes('/insights')) return '💡 Insights'
+  if (path.includes('/calendar')) return '📅 Calendar'
+  if (path.includes('/progress')) return '📊 Progress'
+  if (path === '/dashboard' || path.endsWith('/dashboard')) return '🏠 Dashboard'
+  return '🔗 Open page'
 }
 
 function SuggestedRoutineRow({
@@ -662,7 +662,7 @@ export default function SpeechAssistant() {
                         className="ai-nav-page-btn"
                         onClick={() => openAssistantDestination(msg.navigateTo!)}
                       >
-                        → {navigatePathLabel(msg.navigateTo)}
+                        {navigatePathLabel(msg.navigateTo)}
                       </button>
                     </div>
                   ) : null}

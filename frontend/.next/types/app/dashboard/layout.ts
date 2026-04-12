@@ -1,4 +1,4 @@
-// File: /Users/pranithakm/Downloads/project12/frontend/app/dashboard/layout.tsx
+// File: C:\Users\puvis\OneDrive\Desktop\infant-development-main\infant-development-main\frontend\app\dashboard\layout.tsx
 import * as entry from '../../../../app/dashboard/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
