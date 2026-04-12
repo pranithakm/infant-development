@@ -19,6 +19,7 @@ const resources = {
       "milestones": "Milestones",
       "growth": "Growth",
       "calendar": "Calendar",
+      "vaccinations": "Vaccinations",
       "settings": "Settings",
       "logout": "Logout",
       "add_infant": "Add Infant",

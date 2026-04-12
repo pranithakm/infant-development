@@ -150,6 +150,19 @@ const infantSchema = new mongoose.Schema({
       default: 'Not Started'
     }
   }],
+  vaccinations: [{
+    vaccinationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Vaccination',
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['Pending', 'Done'],
+      default: 'Pending'
+    },
+    dateAdministered: Date
+  }],
   // AI Insights and Chat History
   insights: {
     development_summary: String,

@@ -25,8 +25,27 @@ export interface InfantMilestone {
   status: 'Not Started' | 'Emerging' | 'Developing' | 'Achieved' | 'Mastered';
 }
 
+export interface Vaccination {
+  _id: string;
+  name: string;
+  category: string;
+  daysFromBirth: number;
+  description: string;
+  administration: string;
+  protection: string;
+  sideEffects: string[];
+  dosage: string;
+}
+
+export interface InfantVaccination {
+  vaccinationId: Vaccination;
+  status: 'Pending' | 'Done';
+  dateAdministered?: string;
+}
+
 export interface GrowthMeasurement {
   _id: string;
+  infant?: string;
   date: string;
   height?: number;
   weight?: number;
@@ -101,6 +120,7 @@ export interface Infant {
   parents: Parent[];
   medicalInfo: MedicalInfo;
   milestones: InfantMilestone[];
+  vaccinations: InfantVaccination[];
   insights: InfantInsights;
   chatHistory: ChatMessage[];
   avatar?: string;
@@ -148,4 +168,24 @@ export interface InfantState {
   selectedInfant: Infant | null;
   loading: boolean;
   error: string | null;
+}
+
+export interface DateLogActivity {
+  _id?: string;
+  type: 'milestone' | 'growth' | 'medical' | 'note' | 'custom' | 'special_occasion';
+  description: string;
+  metadata?: any;
+}
+
+export interface DateLog {
+  _id: string;
+  infant: string;
+  date: string;
+  activities: DateLogActivity[];
+  anniversary?: {
+    type: string;
+    description: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }

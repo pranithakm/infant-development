@@ -106,6 +106,10 @@ export const infantsAPI = {
   updateMilestoneStatus: (infantId: string, milestoneId: string, status: string) => 
     api.put(`/infants/${infantId}/milestones/${milestoneId}`, { status }),
   deleteInfant: (id: string) => api.delete(`/infants/${id}`),
+  getVaccinations: (id: string) =>
+    api.get(`/infants/${id}/vaccinations`),
+  updateVaccinationStatus: (id: string, vaccinationId: string, status: string, dateAdministered?: Date) =>
+    api.put(`/infants/${id}/vaccinations/${vaccinationId}`, { status, dateAdministered }),
 }
 
 // Growth API

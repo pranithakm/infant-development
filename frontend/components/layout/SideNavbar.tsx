@@ -24,7 +24,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  User
+  User,
+  Syringe
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useRouter } from 'next/navigation'
@@ -155,6 +156,7 @@ export default function SideNavbar({ infants, selectedInfantId, onSelectInfant }
     { name: t('insights'), href: selectedInfantId ? `/dashboard/infants/${selectedInfantId}/insights` : '#', icon: Lightbulb, disabled: !selectedInfantId },
     { name: t('growth'), href: selectedInfantId ? `/dashboard/infants/${selectedInfantId}/growth` : '#', icon: TrendingUp, disabled: !selectedInfantId },
     { name: t('calendar'), href: selectedInfantId ? `/dashboard/infants/${selectedInfantId}/calendar` : '#', icon: Calendar, disabled: !selectedInfantId },
+    { name: t('vaccinations'), href: selectedInfantId ? `/dashboard/infants/${selectedInfantId}/vaccinations` : '#', icon: Syringe, disabled: !selectedInfantId },
     { name: t('schemes'), href: '/dashboard/schemes', icon: Sparkles }, // Updated schemes link
   ]
 

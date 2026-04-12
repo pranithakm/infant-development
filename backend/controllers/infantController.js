@@ -1,5 +1,6 @@
 const Infant = require('../models/Infant');
 const Milestone = require('../models/Milestone');
+const Vaccination = require('../models/Vaccination');
 const User = require('../models/User');
 const DateLog = require('../models/DateLog');
 
@@ -13,6 +14,7 @@ exports.getInfants = async (req, res) => {
       isActive: true 
     })
     .populate('milestones.milestoneId', 'name category recommendedAge minMonths maxMonths')
+    .populate('vaccinations.vaccinationId')
     .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -46,13 +48,26 @@ exports.getInfant = async (req, res) => {
       'parents.user': req.user.id,
       isActive: true
     })
-    .populate('milestones.milestoneId', 'name category description recommendedAge minMonths maxMonths');
+    .populate('milestones.milestoneId', 'name category description recommendedAge minMonths maxMonths')
+    .populate('vaccinations.vaccinationId');
 
     if (!infant) {
       return res.status(404).json({
         success: false,
         message: 'Infant not found'
       });
+    }
+
+    // Initialize vaccinations if they don't exist
+    if (!infant.vaccinations || infant.vaccinations.length === 0) {
+      const allVaccinations = await Vaccination.find({ isActive: true });
+      infant.vaccinations = allVaccinations.map(v => ({
+        vaccinationId: v._id,
+        status: 'Pending'
+      }));
+      await infant.save();
+      // Re-populate after saving
+      await infant.populate('vaccinations.vaccinationId');
     }
 
     res.status(200).json({
@@ -89,6 +104,15 @@ exports.createInfant = async (req, res) => {
       status: 'Not Started'
     }));
 
+    // Get all vaccinations to initialize the infant's vaccinations array
+    const vaccinations = await Vaccination.find({}, '_id');
+    
+    // Create vaccinations array with default status
+    const infantVaccinations = vaccinations.map(vaccination => ({
+      vaccinationId: vaccination._id,
+      status: 'Pending'
+    }));
+
     // Initialize growth data array with birth measurements
     const growthData = [];
     if (birthWeight || birthLength || birthHeadCircumference) {
@@ -123,7 +147,8 @@ exports.createInfant = async (req, res) => {
         relationship: 'Parent',
         isPrimary: true
       }],
-      milestones: infantMilestones
+      milestones: infantMilestones,
+      vaccinations: infantVaccinations
     });
 
     // Populate milestone details for response
@@ -151,7 +176,123 @@ exports.createInfant = async (req, res) => {
   }
 };
 
-// @desc    Update milestone status
+// @desc    Update vaccination status
+// @route   PUT /api/infants/:id/vaccinations/:vaccinationId
+// @access  Private
+exports.updateVaccinationStatus = async (req, res) => {
+  try {
+    const { id: infantId, vaccinationId } = req.params;
+    const { status, dateAdministered } = req.body;
+
+    // Validate status
+    const validStatuses = ['Pending', 'Done'];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value',
+        validStatuses
+      });
+    }
+
+    // Find infant and check if user is parent
+    const infant = await Infant.findOne({
+      _id: infantId,
+      'parents.user': req.user.id,
+      isActive: true
+    });
+
+    if (!infant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Infant not found'
+      });
+    }
+
+    // Initialize vaccinations if they don't exist
+    if (!infant.vaccinations || infant.vaccinations.length === 0) {
+      const allVaccinations = await Vaccination.find({}, '_id');
+      infant.vaccinations = allVaccinations.map(v => ({
+        vaccinationId: v._id,
+        status: 'Pending'
+      }));
+    }
+
+    // Find the vaccination in the infant's vaccinations array
+    const vIndex = infant.vaccinations.findIndex(
+      v => v.vaccinationId.toString() === vaccinationId
+    );
+
+    if (vIndex === -1) {
+      // If not found, add it
+      infant.vaccinations.push({
+        vaccinationId,
+        status: status || 'Done',
+        dateAdministered: dateAdministered || new Date()
+      });
+    } else {
+      // Update existing
+      if (status) infant.vaccinations[vIndex].status = status;
+      if (dateAdministered) infant.vaccinations[vIndex].dateAdministered = dateAdministered;
+      else if (status === 'Done') infant.vaccinations[vIndex].dateAdministered = new Date();
+    }
+
+    await infant.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Vaccination status updated successfully',
+      data: infant.vaccinations
+    });
+  } catch (error) {
+    console.error('Update vaccination error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating vaccination status'
+    });
+  }
+};
+
+// @desc    Get all vaccinations for an infant
+// @route   GET /api/infants/:id/vaccinations
+// @access  Private
+exports.getInfantVaccinations = async (req, res) => {
+  try {
+    const infant = await Infant.findOne({
+      _id: req.params.id,
+      'parents.user': req.user.id,
+      isActive: true
+    }).populate('vaccinations.vaccinationId');
+
+    if (!infant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Infant not found'
+      });
+    }
+
+    // If vaccinations not initialized, do it now
+    if (!infant.vaccinations || infant.vaccinations.length === 0) {
+      const allVaccinations = await Vaccination.find({ isActive: true });
+      infant.vaccinations = allVaccinations.map(v => ({
+        vaccinationId: v._id,
+        status: 'Pending'
+      }));
+      await infant.save();
+      // Populate again
+      await infant.populate('vaccinations.vaccinationId');
+    }
+
+    res.status(200).json({
+      success: true,
+      data: infant.vaccinations
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching vaccinations'
+    });
+  }
+};
 // @route   PUT /api/infants/:id/milestones/:milestoneId
 // @access  Private
 exports.updateMilestoneStatus = async (req, res) => {

@@ -13,6 +13,8 @@ interface InfantState {
   fetchInfant: (id: string) => Promise<void>;
   createInfant: (infantData: Partial<Infant>) => Promise<Infant | null>;
   updateMilestoneStatus: (infantId: string, milestoneId: string, status: string) => Promise<Infant | null>;
+  updateVaccinationStatus: (infantId: string, vaccinationId: string, status: string, dateAdministered?: Date) => Promise<Infant | null>;
+  fetchVaccinations: (infantId: string) => Promise<void>;
   deleteInfant: (id: string) => Promise<boolean>;
   fetchGrowthMeasurements: (infantId: string) => Promise<void>;
   addGrowthMeasurement: (data: Partial<GrowthMeasurement>) => Promise<GrowthMeasurement | null>;
@@ -142,6 +144,59 @@ export const useInfantStore = create<InfantState>()(
           console.error('Error updating milestone status:', error);
           set({ error: error.response?.data?.message || 'Failed to update milestone', loading: false });
           return null;
+        }
+      },
+
+      updateVaccinationStatus: async (infantId: string, vaccinationId: string, status: string, dateAdministered?: Date) => {
+        set({ loading: true, error: null });
+        try {
+          const response = await infantsAPI.updateVaccinationStatus(infantId, vaccinationId, status, dateAdministered);
+          const updatedVaccinations = response.data.data;
+          
+          set((state) => {
+            if (!state.selectedInfant || state.selectedInfant._id !== infantId) return state;
+            
+            const updatedInfant = {
+              ...state.selectedInfant,
+              vaccinations: updatedVaccinations
+            };
+            
+            return {
+              infants: state.infants.map((infant) =>
+                infant._id === infantId ? updatedInfant : infant
+              ),
+              selectedInfant: updatedInfant,
+              loading: false
+            };
+          });
+          
+          return get().selectedInfant;
+        } catch (error: any) {
+          console.error('Error updating vaccination status:', error);
+          set({ error: error.response?.data?.message || 'Failed to update vaccination', loading: false });
+          return null;
+        }
+      },
+
+      fetchVaccinations: async (infantId: string) => {
+        set({ loading: true, error: null });
+        try {
+          const response = await infantsAPI.getVaccinations(infantId);
+          const vaccinations = response.data.data;
+          
+          set((state) => {
+            if (!state.selectedInfant || state.selectedInfant._id !== infantId) return state;
+            
+            return {
+              selectedInfant: {
+                ...state.selectedInfant,
+                vaccinations
+              },
+              loading: false
+            };
+          });
+        } catch (error: any) {
+          set({ error: error.response?.data?.message || 'Failed to fetch vaccinations', loading: false });
         }
       },
 

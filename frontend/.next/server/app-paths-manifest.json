@@ -1,9 +1,9 @@
 {
-  "/dashboard/infants/[id]/insights/page": "app/dashboard/infants/[id]/insights/page.js",
-  "/dashboard/infants/[id]/progress/page": "app/dashboard/infants/[id]/progress/page.js",
-  "/dashboard/infants/[id]/milestones/page": "app/dashboard/infants/[id]/milestones/page.js",
-  "/dashboard/infants/[id]/tracker/page": "app/dashboard/infants/[id]/tracker/page.js",
-  "/dashboard/schemes/page": "app/dashboard/schemes/page.js",
+  "/dashboard/infants/[id]/vaccinations/page": "app/dashboard/infants/[id]/vaccinations/page.js",
+  "/dashboard/infants/[id]/calendar/page": "app/dashboard/infants/[id]/calendar/page.js",
   "/dashboard/infants/[id]/page": "app/dashboard/infants/[id]/page.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/dashboard/infants/[id]/progress/page": "app/dashboard/infants/[id]/progress/page.js",
+  "/dashboard/infants/[id]/insights/page": "app/dashboard/infants/[id]/insights/page.js",
+  "/dashboard/infants/[id]/tracker/page": "app/dashboard/infants/[id]/tracker/page.js",
+  "/dashboard/infants/[id]/growth/page": "app/dashboard/infants/[id]/growth/page.js"
 }

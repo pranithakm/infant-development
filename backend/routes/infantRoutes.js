@@ -5,6 +5,8 @@ const {
   getInfant,
   createInfant,
   updateMilestoneStatus,
+  updateVaccinationStatus,
+  getInfantVaccinations,
   deleteInfant,
   getCalendarActivities
 } = require('../controllers/infantController');
@@ -25,6 +27,12 @@ router.route('/:id')
 
 router.route('/:id/milestones/:milestoneId')
   .put(updateMilestoneStatus);
+
+router.route('/:id/vaccinations')
+  .get(getInfantVaccinations);
+
+router.route('/:id/vaccinations/:vaccinationId')
+  .put(updateVaccinationStatus);
 
 router.route('/:id/calendar')
   .get(getCalendarActivities);
