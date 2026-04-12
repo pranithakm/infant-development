@@ -156,7 +156,7 @@ const processQuery = async ({ userId, infantId, question, currentPage, lastActio
   // 4. Retrieve conversation memory
   let memoryBlock = '';
   try {
-    const recentInteractions = await memoryService.getRecentInteractions(userId);
+    const recentInteractions = await memoryService.getRecentInteractions(userId, undefined, infantId || null);
     memoryBlock = memoryService.formatMemoryForPrompt(recentInteractions);
   } catch (err) {
     console.warn('[Agent] Memory retrieval failed:', err.message);

@@ -9,21 +9,20 @@
  */
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { generateTextWithModelFallback } = require('../../utils/geminiFallback');
 
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
-// Lazy-init Gemini so the module can load even when the key is absent
-let geminiModel = null;
+let geminiClient = null;
 
-const getGeminiModel = () => {
-  if (geminiModel) return geminiModel;
+const getGeminiClient = () => {
+  if (geminiClient) return geminiClient;
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
-  const genAI = new GoogleGenerativeAI(key);
-  geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-  return geminiModel;
+  geminiClient = new GoogleGenerativeAI(key);
+  return geminiClient;
 };
 
 // ---------------------------------------------------------------------------
@@ -34,13 +33,14 @@ const getGeminiModel = () => {
  * Call Google Gemini via the official SDK.
  */
 const callGemini = async (prompt, systemPrompt = '') => {
-  const model = getGeminiModel();
-  if (!model) throw new Error('Gemini API key not configured — set GEMINI_API_KEY in .env');
+  const genAI = getGeminiClient();
+  if (!genAI) throw new Error('Gemini API key not configured — set GEMINI_API_KEY in .env');
 
   const fullPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
-  const result = await model.generateContent(fullPrompt);
-  const response = await result.response;
-  const text = response.text();
+  const text = await generateTextWithModelFallback(genAI, {
+    userPrompt: fullPrompt,
+    maxRetriesPerModel: 3,
+  });
   if (!text) throw new Error('Empty response from Gemini');
   return text;
 };

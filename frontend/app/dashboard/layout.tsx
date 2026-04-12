@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import SideNavbar from '@/components/layout/SideNavbar'
 import { useInfantStore } from '@/store/infantStore'
 import { Infant } from '@/types'
-import SpeechAssistant from '@/components/ai/SpeechAssistant'
 
 export default function DashboardLayout({
   children,
@@ -83,7 +82,6 @@ export default function DashboardLayout({
       {/* Main content area with left margin to accommodate fixed sidebar */}
       <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} ml-0 sm:ml-0`}>
         {children}
-        <SpeechAssistant />
       </div>
     </div>
   )

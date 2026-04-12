@@ -56,17 +56,28 @@ const saveInteraction = async (userId, interaction) => {
 };
 
 /**
- * Get recent interactions for a user.
+ * Get recent interactions for a user, filtered by infant.
  * 
  * @param {string} userId
  * @param {number} limit - Maximum number of interactions to return
+ * @param {string|null} infantId - If provided, only return interactions for this infant
  * @returns {Promise<Array>} Array of interaction objects
  */
-const getRecentInteractions = async (userId, limit = MAX_INTERACTIONS) => {
+const getRecentInteractions = async (userId, limit = MAX_INTERACTIONS, infantId = null) => {
   try {
     const memory = await AgentMemory.findOne({ userId }).lean();
     if (!memory || !memory.interactions) return [];
-    return memory.interactions.slice(-limit);
+
+    let interactions = memory.interactions;
+
+    // Filter by infantId if provided — each baby gets their own conversation context
+    if (infantId) {
+      interactions = interactions.filter(
+        (i) => i.infantId && i.infantId.toString() === infantId.toString()
+      );
+    }
+
+    return interactions.slice(-limit);
   } catch (err) {
     console.error('[Memory] Failed to fetch interactions:', err.message);
     return [];

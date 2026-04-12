@@ -5,11 +5,12 @@ const Milestone = require('../models/Milestone');
 const Routine = require('../models/Routine');
 const Scheme = require('../models/Scheme');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { generateTextWithModelFallback, getModelChain } = require('../utils/geminiFallback');
 
 // Global variables to store common data and LLM instance
 let commonData = null;
 let genAI = null;
-let model = null;
+let model = null; // primary model handle (first in fallback chain); calls use full fallback
 
 // Initialize LLM and load common data
 const initializeAI = async () => {
@@ -22,12 +23,11 @@ const initializeAI = async () => {
       return;
     }
     
-    // Initialize Google Generative AI
+    // Initialize Google Generative AI (runtime calls use multi-model fallback)
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    
-    // Use gemini-2.0-flash as it's available and suitable for our use case
-    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-    console.log('AI model initialized successfully');
+    const primaryModel = getModelChain()[0];
+    model = genAI.getGenerativeModel({ model: primaryModel });
+    console.log(`AI initialized (primary Gemini model: ${primaryModel}; fallback chain enabled)`);
     
     // Load common data from MongoDB
     console.log('Loading common data...');
@@ -286,10 +286,11 @@ const generateInsightsForInfant = async (infant) => {
     
     console.log('Sending prompt to Gemini API');
     
-    // Generate insights using Google Gemini
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const aiResponse = response.text();
+    // Generate insights using Google Gemini (tries fallback models on failure)
+    const aiResponse = await generateTextWithModelFallback(genAI, {
+      userPrompt: prompt,
+      maxRetriesPerModel: 3,
+    });
     console.log(aiResponse);
     console.log('Received response from Gemini API');
     
@@ -482,10 +483,11 @@ const chatWithAI = async (req, res) => {
     
     console.log('Sending prompt to Gemini API');
     
-    // Generate response using Google Gemini
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let aiResponse = response.text();
+    // Generate response using Google Gemini (tries fallback models on failure)
+    let aiResponse = await generateTextWithModelFallback(genAI, {
+      userPrompt: prompt,
+      maxRetriesPerModel: 3,
+    });
     
     console.log('Received response from Gemini API');
     
